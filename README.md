@@ -190,9 +190,8 @@ src/
 
 ## 联系方式
 
-- 邮箱：contact@learningnav.com
-- 微信：LearningNav
-- QQ群：123456789
+- 邮箱：2903099775@qq.com
+- QQ群：2903099775
 
 ## 许可证
 
