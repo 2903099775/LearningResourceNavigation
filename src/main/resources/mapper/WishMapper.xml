@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.learning.mapper.WishMapper">
+
+    <resultMap id="BaseResultMap" type="com.learning.entity.Wish">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="username" property="username"/>
+        <result column="title" property="title"/>
+        <result column="description" property="description"/>
+        <result column="category" property="category"/>
+        <result column="like_count" property="likeCount"/>
+        <result column="status" property="status"/>
+        <result column="admin_reply" property="adminReply"/>
+        <result column="created_at" property="createdAt"/>
+    </resultMap>
+
+    <select id="findAll" resultMap="BaseResultMap">
+        SELECT * FROM wishes
+        <where>
+            <if test="category != null and category != ''">
+                AND category = #{category}
+            </if>
+        </where>
+        <choose>
+            <when test="sort == 'latest'">ORDER BY created_at DESC</when>
+            <when test="sort == 'popular'">ORDER BY like_count DESC, created_at DESC</when>
+            <otherwise>ORDER BY created_at DESC</otherwise>
+        </choose>
+    </select>
+
+    <select id="findById" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT * FROM wishes WHERE id = #{id}
+    </select>
+
+    <insert id="insert" parameterType="com.learning.entity.Wish" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO wishes (user_id, username, title, description, category, like_count, status, created_at)
+        VALUES (#{userId}, #{username}, #{title}, #{description}, #{category}, 0, 1, NOW())
+    </insert>
+
+    <update id="updateLikeCount">
+        UPDATE wishes SET like_count = like_count + #{delta} WHERE id = #{id}
+    </update>
+
+    <select id="hasUserLiked" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM wish_likes WHERE wish_id = #{wishId} AND user_id = #{userId}
+    </select>
+
+    <insert id="addUserLike">
+        INSERT INTO wish_likes (wish_id, user_id) VALUES (#{wishId}, #{userId})
+    </insert>
+
+    <delete id="removeUserLike">
+        DELETE FROM wish_likes WHERE wish_id = #{wishId} AND user_id = #{userId}
+    </delete>
+
+    <update id="updateStatus">
+        UPDATE wishes SET status = #{status}
+        <if test="adminReply != null and adminReply != ''">
+            , admin_reply = #{adminReply}
+        </if>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.Long">
+        DELETE FROM wishes WHERE id = #{id}
+    </delete>
+
+    <select id="findAdminList" resultMap="BaseResultMap">
+        SELECT * FROM wishes
+        <where>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY like_count DESC, created_at DESC
+    </select>
+
+    <select id="countPending" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM wishes WHERE status = 1
+    </select>
+
+</mapper>

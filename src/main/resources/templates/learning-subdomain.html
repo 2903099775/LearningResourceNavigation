@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>学习方向 - 学习资源导航系统</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; background-color: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+        header { background-color: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 1000; }
+        nav { display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; }
+        .logo { font-size: 1.5rem; font-weight: bold; color: #007bff; text-decoration: none; line-height: 1.5; }
+        .nav-links { display: flex; list-style: none; gap: 2rem; margin: 0; padding: 0; align-items: center; }
+        .nav-links a { text-decoration: none; color: #333; font-weight: 500; transition: color 0.3s; }
+        .nav-links a:hover, .nav-links a.active { color: #007bff; }
+        .nav-links .dropdown { position: relative; }
+        .nav-links .dropdown-toggle { cursor: pointer; display: flex; align-items: center; gap: 4px; }
+        .nav-links .dropdown-toggle::after { content: '\25BC'; font-size: 0.6em; transition: transform 0.3s; }
+        .nav-links .dropdown:hover .dropdown-toggle::after { transform: rotate(180deg); }
+        .nav-links .dropdown-menu { display: none; position: absolute; top: 100%; left: -1rem; background: #fff; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); min-width: 180px; padding: 0.5rem 0; z-index: 1001; }
+        .nav-links .dropdown:hover .dropdown-menu { display: block; }
+        .nav-links .dropdown-menu a { display: block; padding: 0.6rem 1.2rem; color: #333; white-space: nowrap; border-radius: 4px; margin: 0 0.3rem; }
+        .nav-links .dropdown-menu a:hover { background: #f0f7ff; color: #007bff; }
+        .hamburger { display: none; cursor: pointer; flex-direction: column; gap: 5px; }
+        .hamburger span { display: block; width: 25px; height: 3px; background-color: #333; transition: all 0.3s; }
+        .btn { display: inline-flex; align-items: center; padding: 0.5rem 1.5rem; border-radius: 6px; text-decoration: none; font-weight: 500; transition: all 0.3s; border: none; cursor: pointer; line-height: 1.5; }
+        .btn-primary { background-color: #007bff; color: #fff; }
+        .btn-primary:hover { background-color: #0056b3; }
+
+        .btn-vip {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .btn-vip::before {
+            content: '💎';
+            font-size: 1rem;
+        }
+
+        .btn-vip:hover {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+        }
+
+        .btn-vip:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 6px rgba(245, 158, 11, 0.3);
+        }
+
+        /* Breadcrumb */
+        .breadcrumb { padding: 1rem 0; color: #666; font-size: 0.9rem; }
+        .breadcrumb a { color: #007bff; text-decoration: none; }
+        .breadcrumb a:hover { text-decoration: underline; }
+        .breadcrumb span { margin: 0 0.5rem; color: #ccc; }
+
+        /* Page Header */
+        .page-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; padding: 3rem 0; text-align: center; }
+        .page-header h1 { font-size: 2.2rem; margin-bottom: 0.5rem; }
+        .page-header p { font-size: 1.1rem; opacity: 0.9; }
+
+        /* ============ categoryId 模式：子领域卡片网格 ============ */
+        .subcategories-section { padding: 3rem 0; }
+        .subcategories-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; margin-top: 2rem; }
+        .subcategory-card {
+            background: #fff; border-radius: 12px; padding: 1.5rem 2rem;
+            transition: all 0.3s; box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            cursor: pointer; text-decoration: none; color: #333; display: block;
+        }
+        .subcategory-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
+        .subcategory-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.8rem; }
+        .subcategory-icon { font-size: 2rem; }
+        .subcategory-name { font-size: 1.2rem; font-weight: 600; }
+        .subcategory-desc { color: #666; font-size: 0.9rem; margin-bottom: 1rem; line-height: 1.5; }
+        .subcategory-meta { display: flex; align-items: center; justify-content: space-between; }
+        .path-count { color: #007bff; font-size: 0.85rem; font-weight: 500; }
+        .view-btn {
+            display: inline-flex; align-items: center; gap: 0.3rem;
+            padding: 0.4rem 1rem; border-radius: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff; font-size: 0.85rem; font-weight: 500;
+            text-decoration: none; transition: all 0.3s; border: none; cursor: pointer;
+        }
+        .view-btn:hover { transform: scale(1.05); box-shadow: 0 4px 12px rgba(102,126,234,0.4); }
+
+        /* ============ id 模式：学习路线卡片网格 ============ */
+        .paths-section { padding: 3rem 0; }
+        .paths-section-title { font-size: 1.3rem; font-weight: 600; color: #333; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem; }
+        .paths-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; }
+        .path-card {
+            background: #fff; border-radius: 12px; padding: 1.5rem 2rem;
+            transition: all 0.3s; box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            cursor: pointer; text-decoration: none; color: #333; display: block;
+        }
+        .path-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
+        .path-card-icon { font-size: 2.5rem; margin-bottom: 1rem; }
+        .path-card-title { font-size: 1.15rem; font-weight: 600; margin-bottom: 0.5rem; color: #333; }
+        .path-card-desc { color: #666; font-size: 0.9rem; margin-bottom: 1rem; line-height: 1.5;
+            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .path-card-meta { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+        .path-card-difficulty { font-size: 0.75rem; padding: 0.2rem 0.6rem; border-radius: 10px; font-weight: 500; }
+        .path-card-difficulty.beginner { background: #e8f4fd; color: #007bff; }
+        .path-card-difficulty.intermediate { background: #fef3e2; color: #f39c12; }
+        .path-card-difficulty.advanced { background: #fde8e8; color: #e74c3c; }
+        .path-card-duration { font-size: 0.8rem; color: #888; }
+        .path-card-learners { font-size: 0.8rem; color: #888; }
+        .path-card-arrow { margin-top: 1rem; color: #007bff; font-size: 0.85rem; font-weight: 500; }
+
+        /* Empty state */
+        .empty-state { text-align: center; padding: 4rem 2rem; color: #999; }
+        .empty-state-icon { font-size: 3rem; margin-bottom: 1rem; }
+        .empty-state-text { font-size: 1.1rem; }
+
+        .loading { text-align: center; padding: 3rem; color: #666; }
+        .spinner { display: inline-block; width: 40px; height: 40px; border: 3px solid #f3f3f3; border-top: 3px solid #007bff; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .error-msg { text-align: center; padding: 2rem; color: #e74c3c; }
+
+        footer {
+            border-top: 1px solid #eaeaea;
+            padding: 2rem 0;
+            margin-top: 4rem;
+            text-align: center;
+            background-color: #fff;
+        }
+
+        .footer-copy {
+            color: #999;
+            font-size: 0.85rem;
+            margin: 0;
+        }
+        footer p { opacity: 0.7; font-size: 0.9rem; }
+
+        @media (max-width: 768px) {
+            .hamburger { display: flex; }
+            .nav-links { display: none; position: absolute; top: 100%; left: 0; right: 0; background: #fff; flex-direction: column; padding: 1rem; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+            .nav-links.active { display: flex; }
+            .subcategories-grid, .paths-grid { grid-template-columns: 1fr; }
+            .page-header h1 { font-size: 1.6rem; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <nav>
+                <a href="/" class="logo">学习资源导航</a>
+                <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
+                <ul class="nav-links" id="navLinks">
+                    <li><a href="/">首页</a></li>
+                    <li class="dropdown">
+                        <a href="/learning-domains" class="dropdown-toggle active">学习领域</a>
+                        <div class="dropdown-menu" id="domainDropdown"></div>
+                    </li>
+                    <li><a href="/learning-path">学习路线</a></li>
+                    <li><a href="/vip" class="btn btn-primary">VIP充值</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <div class="breadcrumb">
+            <div class="container">
+                <a href="/">首页</a> <span>&gt;</span> <a href="/learning-domains">学习领域</a>
+                <span id="breadcrumbCatSep" style="display:none;">&gt;</span>
+                <a href="#" id="breadcrumbCatLink" style="display:none;"></a>
+                <span id="breadcrumbSubSep" style="display:none;">&gt;</span>
+                <strong id="breadcrumbCurrent">加载中...</strong>
+            </div>
+        </div>
+
+        <div class="page-header">
+            <div class="container">
+                <h1 id="pageTitle">加载中...</h1>
+                <p id="pageDesc"></p>
+            </div>
+        </div>
+
+        <!-- categoryId 模式：子领域列表 -->
+        <section id="subcategoriesView" class="subcategories-section" style="display:none;">
+            <div class="container">
+                <div id="subcategoriesGrid" class="subcategories-grid"></div>
+            </div>
+        </section>
+
+        <!-- id 模式：学习路线列表 -->
+        <section id="pathsView" class="paths-section" style="display:none;">
+            <div class="container">
+                <div class="paths-section-title" id="pathsSectionTitle">📚 学习路线</div>
+                <div id="pathsGrid" class="paths-grid"></div>
+                <div id="pathsEmpty" class="empty-state" style="display:none;">
+                    <div class="empty-state-icon">📭</div>
+                    <div class="empty-state-text">该方向暂无学习路线</div>
+                </div>
+            </div>
+        </section>
+
+        <div id="loadingArea" class="loading">
+            <div class="spinner"></div>
+            <p style="margin-top: 1rem;">加载中...</p>
+        </div>
+        <div id="errorArea" class="error-msg" style="display:none;"></div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p class="footer-copy">&copy; 2026 学习资源导航系统</p>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('hamburger').addEventListener('click', function() {
+            document.getElementById('navLinks').classList.toggle('active');
+        });
+
+        const params = new URLSearchParams(window.location.search);
+        const categoryId = params.get('categoryId');
+        const subcategoryId = params.get('id');
+
+        async function loadData() {
+            try {
+                // Load categories for dropdown
+                const [catRes, subRes] = await Promise.all([
+                    fetch('/api/categories/active'),
+                    fetch('/api/subcategories/all')
+                ]);
+                const catData = await catRes.json();
+                const subData = await subRes.json();
+                const categories = (catData.code === 200) ? (catData.data || []) : [];
+                const allSubs = (subData.code === 200) ? (subData.data || []) : [];
+
+                // Build dropdown
+                const dropdown = document.getElementById('domainDropdown');
+                categories.forEach(cat => {
+                    const catSubs = allSubs.filter(s => s.categoryId === cat.id);
+                    if (catSubs.length > 0) {
+                        const group = document.createElement('div');
+                        group.style.cssText = 'padding: 0.3rem 1.2rem 0.1rem; font-size: 0.75rem; color: #999; font-weight: 600;';
+                        group.textContent = cat.name;
+                        dropdown.appendChild(group);
+                    }
+                    catSubs.forEach(sub => {
+                        const a = document.createElement('a');
+                        a.href = '/learning-subdomain?id=' + sub.id;
+                        a.textContent = sub.name;
+                        dropdown.appendChild(a);
+                    });
+                });
+
+                if (subcategoryId) {
+                    // =============== id 模式：显示该子域的学习路线 ===============
+                    await renderSubcategoryPaths(subcategoryId, categories);
+                } else if (categoryId) {
+                    // =============== categoryId 模式：显示分类下的子领域列表 ===============
+                    await renderCategorySubcategories(categoryId, categories, allSubs);
+                } else {
+                    throw new Error('请指定学习领域或学习方向');
+                }
+            } catch (err) {
+                document.getElementById('loadingArea').style.display = 'none';
+                document.getElementById('errorArea').style.display = 'block';
+                document.getElementById('errorArea').textContent = '加载失败: ' + err.message;
+            }
+        }
+
+        // categoryId 模式：展示子领域卡片，点击跳转到子领域详情
+        async function renderCategorySubcategories(catId, categories, allSubs) {
+            const res = await fetch('/api/subcategories/category/' + catId);
+            const data = await res.json();
+            if (data.code !== 200) throw new Error(data.message);
+            const subcategories = data.data || [];
+            const cat = categories.find(c => c.id == catId);
+
+            // Update header
+            document.getElementById('pageTitle').textContent = cat ? cat.name : '';
+            document.getElementById('pageDesc').textContent = cat ? (cat.description || '选择一个学习方向开始学习') : '';
+            document.getElementById('breadcrumbCatSep').style.display = '';
+            document.getElementById('breadcrumbCatLink').textContent = cat ? cat.name : '';
+            document.getElementById('breadcrumbCatLink').href = '/learning-subdomain?categoryId=' + catId;
+            document.getElementById('breadcrumbCurrent').textContent = '选择学习方向';
+
+            // Load path counts for each subcategory
+            for (let sub of subcategories) {
+                try {
+                    const pathRes = await fetch('/api/paths/subcategory/' + sub.id);
+                    const pathData = await pathRes.json();
+                    sub.pathCount = (pathData.code === 200) ? (pathData.data || []).length : 0;
+                } catch(e) {
+                    sub.pathCount = 0;
+                }
+            }
+
+            // Render subcategory cards
+            const grid = document.getElementById('subcategoriesGrid');
+            if (subcategories.length === 0) {
+                grid.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📭</div><div class="empty-state-text">该领域暂无学习方向</div></div>';
+            } else {
+                subcategories.forEach(sub => {
+                    const card = document.createElement('a');
+                    card.href = '/learning-subdomain?id=' + sub.id;
+                    card.className = 'subcategory-card';
+                    card.innerHTML = `
+                        <div class="subcategory-header">
+                            <span class="subcategory-icon">${sub.icon || '📖'}</span>
+                            <span class="subcategory-name">${sub.name}</span>
+                        </div>
+                        <div class="subcategory-desc">${sub.description || ''}</div>
+                        <div class="subcategory-meta">
+                            <span class="path-count">${sub.pathCount} 个学习路线</span>
+                            <span class="view-btn">查看 →</span>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+            }
+
+            document.getElementById('loadingArea').style.display = 'none';
+            document.getElementById('subcategoriesView').style.display = '';
+        }
+
+        // id 模式：展示子域的学习路线卡片
+        async function renderSubcategoryPaths(subId, categories) {
+            // Load subcategory info
+            const subRes = await fetch('/api/subcategories/' + subId);
+            const subData = await subRes.json();
+            if (subData.code !== 200) throw new Error(subData.message);
+            const sub = subData.data;
+
+            // Load paths
+            const pathRes = await fetch('/api/paths/subcategory/' + subId);
+            const pathData = await pathRes.json();
+            const paths = (pathData.code === 200) ? (pathData.data || []) : [];
+
+            // Update header
+            document.getElementById('pageTitle').textContent = sub.name;
+            document.getElementById('pageDesc').textContent = sub.description || '选择一条学习路线开始学习';
+
+            // Update breadcrumb
+            const cat = categories.find(c => c.id === sub.categoryId);
+            if (cat) {
+                document.getElementById('breadcrumbCatSep').style.display = '';
+                document.getElementById('breadcrumbCatLink').textContent = cat.name;
+                document.getElementById('breadcrumbCatLink').href = '/learning-subdomain?categoryId=' + cat.id;
+                document.getElementById('breadcrumbSubSep').style.display = '';
+            }
+            document.getElementById('breadcrumbCurrent').textContent = sub.name;
+
+            // Update section title
+            document.getElementById('pathsSectionTitle').textContent = '📚 ' + sub.name + ' - 学习路线';
+
+            // Render path cards
+            const grid = document.getElementById('pathsGrid');
+            if (paths.length === 0) {
+                document.getElementById('pathsEmpty').style.display = '';
+            } else {
+                const icons = ['📘', '📗', '📙', '📕', '📓', '📔', '📒', '📃'];
+                paths.forEach((path, idx) => {
+                    const card = document.createElement('a');
+                    card.href = '/learning-path?id=' + path.id;
+                    card.className = 'path-card';
+                    const diffClass = path.difficulty === 'ADVANCED' ? 'advanced' : (path.difficulty === 'INTERMEDIATE' ? 'intermediate' : 'beginner');
+                    const diffText = path.difficulty === 'BEGINNER' ? '入门' : (path.difficulty === 'INTERMEDIATE' ? '进阶' : (path.difficulty === 'ADVANCED' ? '高级' : ''));
+                    card.innerHTML = `
+                        <div class="path-card-icon">${icons[idx % icons.length]}</div>
+                        <div class="path-card-title">${path.title}</div>
+                        <div class="path-card-desc">${path.description || ''}</div>
+                        <div class="path-card-meta">
+                            <span class="path-card-difficulty ${diffClass}">${diffText}</span>
+                            <span class="path-card-duration">⏱ ${path.durationWeeks || '-'}周</span>
+                            <span class="path-card-learners">👥 ${path.learnersCount || 0}人学习</span>
+                        </div>
+                        <div class="path-card-arrow">开始学习 →</div>
+                    `;
+                    grid.appendChild(card);
+                });
+            }
+
+            document.getElementById('loadingArea').style.display = 'none';
+            document.getElementById('pathsView').style.display = '';
+        }
+
+        loadData();
+    </script>
+</body>
+</html>

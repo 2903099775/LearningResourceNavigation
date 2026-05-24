@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.learning.mapper.UserMapper">
+
+    <resultMap id="BaseResultMap" type="com.learning.entity.User">
+        <id column="id" property="id"/>
+        <result column="username" property="username"/>
+        <result column="password" property="password"/>
+        <result column="email" property="email"/>
+        <result column="phone" property="phone"/>
+        <result column="avatar" property="avatar"/>
+        <result column="role" property="role"/>
+        <result column="vip_expire_date" property="vipExpireDate"/>
+        <result column="status" property="status"/>
+        <result column="mute_status" property="muteStatus"/>
+        <result column="mute_end_date" property="muteEndDate"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <select id="findByUsername" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT id, username, password, email, phone, avatar, role, vip_expire_date, status, mute_status, mute_end_date, created_at, updated_at
+        FROM users
+        WHERE username = #{username}
+    </select>
+
+    <select id="findByEmail" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT id, username, password, email, phone, avatar, role, vip_expire_date, status, mute_status, mute_end_date, created_at, updated_at
+        FROM users
+        WHERE email = #{email}
+    </select>
+
+    <select id="findByPhone" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT id, username, password, email, phone, avatar, role, vip_expire_date, status, mute_status, mute_end_date, created_at, updated_at
+        FROM users
+        WHERE phone = #{phone}
+        LIMIT 1
+    </select>
+
+    <insert id="insert" parameterType="com.learning.entity.User">
+        INSERT INTO users (username, password, email, phone, avatar, role, vip_expire_date, status, mute_status, created_at, updated_at)
+        VALUES (#{username}, #{password}, #{email}, #{phone}, #{avatar}, #{role}, #{vipExpireDate}, #{status}, 0, #{createdAt}, #{updatedAt})
+    </insert>
+
+    <update id="update" parameterType="com.learning.entity.User">
+        UPDATE users
+        <set>
+            <if test="username != null">username = #{username},</if>
+            <if test="password != null">password = #{password},</if>
+            <if test="email != null">email = #{email},</if>
+            <if test="phone != null">phone = #{phone},</if>
+            <if test="avatar != null">avatar = #{avatar},</if>
+            <if test="role != null">role = #{role},</if>
+            <if test="vipExpireDate != null">vip_expire_date = #{vipExpireDate},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="muteStatus != null">mute_status = #{muteStatus},</if>
+            <if test="muteEndDate != null">mute_end_date = #{muteEndDate},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <select id="findById" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT id, username, password, email, phone, avatar, role, vip_expire_date, status, mute_status, mute_end_date, created_at, updated_at
+        FROM users
+        WHERE id = #{id}
+    </select>
+
+    <select id="findAll" resultMap="BaseResultMap">
+        SELECT id, username, password, email, phone, avatar, role, vip_expire_date, status, mute_status, mute_end_date, created_at, updated_at
+        FROM users
+        ORDER BY created_at DESC
+    </select>
+
+    <select id="isVipUser" resultType="java.lang.Boolean">
+        SELECT (role = 'ADMIN') OR (vip_expire_date IS NOT NULL AND vip_expire_date >= CURRENT_DATE) FROM users WHERE id = #{userId}
+    </select>
+
+    <select id="searchUsers" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT id, username, password, email, phone, avatar, role, vip_expire_date, status, mute_status, mute_end_date, created_at, updated_at
+        FROM users
+        WHERE username LIKE CONCAT('%', #{keyword}, '%') OR email LIKE CONCAT('%', #{keyword}, '%')
+        ORDER BY created_at DESC
+    </select>
+
+    <select id="findAllWithDetails" resultType="java.util.Map">
+        SELECT id, username, email, phone, role, vip_expire_date, status, mute_status, mute_end_date, created_at
+        FROM users
+        ORDER BY created_at DESC
+    </select>
+
+    <select id="countUsersByDateRange" parameterType="java.time.LocalDateTime" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM users
+        WHERE created_at >= #{startDate} AND created_at &lt; #{endDate}
+    </select>
+
+    <update id="updateMuteStatus">
+        UPDATE users SET mute_status = #{muteStatus}, mute_end_date = #{muteEndDate}, updated_at = NOW() WHERE id = #{userId}
+    </update>
+
+    <select id="countUsersGroupByDate" resultType="java.util.Map">
+        SELECT DATE(created_at) AS register_date, COUNT(*) AS user_count
+        FROM users
+        WHERE created_at >= #{startDate} AND created_at &lt; #{endDate}
+        GROUP BY DATE(created_at)
+        ORDER BY register_date ASC
+    </select>
+
+    <select id="countTotal" resultType="int">
+        SELECT COUNT(*) FROM users
+    </select>
+
+    <select id="findByRole" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT id, username, password, email, phone, avatar, role, vip_expire_date, status, mute_status, mute_end_date, created_at, updated_at
+        FROM users
+        WHERE role = #{role}
+    </select>
+
+</mapper>

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.learning.mapper.FeedbackMapper">
+
+    <resultMap id="BaseResultMap" type="com.learning.entity.Feedback">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="type" property="type"/>
+        <result column="title" property="title"/>
+        <result column="content" property="content"/>
+        <result column="contact" property="contact"/>
+        <result column="status" property="status"/>
+        <result column="reply" property="reply"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="resolved_at" property="resolvedAt"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.learning.entity.Feedback" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO feedbacks (user_id, type, title, content, contact, status)
+        VALUES (#{userId}, #{type}, #{title}, #{content}, #{contact}, #{status})
+    </insert>
+
+    <select id="findAll" resultMap="BaseResultMap">
+        SELECT * FROM feedbacks
+        <where>
+            <if test="status != null and status != ''">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY created_at DESC
+    </select>
+
+    <select id="findById" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT * FROM feedbacks WHERE id = #{id}
+    </select>
+
+    <update id="updateReply">
+        UPDATE feedbacks SET reply = #{reply}, status = #{status}, resolved_at = NOW() WHERE id = #{id}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.Long">
+        DELETE FROM feedbacks WHERE id = #{id}
+    </delete>
+
+    <select id="findByUserId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT * FROM feedbacks WHERE user_id = #{userId} ORDER BY created_at DESC
+    </select>
+
+    <select id="countByStatus" parameterType="java.lang.String" resultType="int">
+        SELECT COUNT(*) FROM feedbacks
+        <where>
+            <if test="status != null and status != ''">
+                AND status = #{status}
+            </if>
+        </where>
+    </select>
+
+</mapper>

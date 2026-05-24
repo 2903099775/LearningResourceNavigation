@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.learning.mapper.ResourceMapper">
+
+    <resultMap id="BaseResultMap" type="com.learning.entity.Resource">
+        <id column="id" property="id"/>
+        <result column="stage_id" property="unitId"/>
+        <result column="title" property="title"/>
+        <result column="description" property="description"/>
+        <result column="type" property="resourceType"/>
+        <result column="external_url" property="resourceUrl"/>
+        <result column="platform" property="sourcePlatform"/>
+        <result column="author" property="author"/>
+        <result column="duration_minutes" property="duration"/>
+        <result column="sort_order" property="orderNum"/>
+        <result column="status" property="status"/>
+        <result column="created_at" property="createdAt"/>
+    </resultMap>
+
+    <select id="findByUnitId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT * FROM learning_units WHERE stage_id = #{unitId} ORDER BY sort_order ASC
+    </select>
+
+    <select id="findById" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT * FROM learning_units WHERE id = #{id}
+    </select>
+
+    <insert id="insert" parameterType="com.learning.entity.Resource">
+        INSERT INTO learning_units (stage_id, title, type, external_url, platform, author, duration_minutes, description, sort_order, status)
+        VALUES (#{unitId}, #{title}, #{resourceType}, #{resourceUrl}, #{sourcePlatform}, #{author}, #{duration}, #{description}, #{orderNum}, #{status})
+    </insert>
+
+    <update id="update" parameterType="com.learning.entity.Resource">
+        UPDATE learning_units
+        SET title = #{title},
+            type = #{resourceType},
+            external_url = #{resourceUrl},
+            platform = #{sourcePlatform},
+            author = #{author},
+            duration_minutes = #{duration},
+            description = #{description},
+            sort_order = #{orderNum},
+            status = #{status}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.Long">
+        DELETE FROM learning_units WHERE id = #{id}
+    </delete>
+
+    <delete id="deleteByUnitId" parameterType="java.lang.Long">
+        DELETE FROM learning_units WHERE stage_id = #{unitId}
+    </delete>
+
+    <select id="findByResourceType" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT * FROM learning_units WHERE type = #{resourceType} AND status = 1 ORDER BY created_at DESC
+    </select>
+    
+    <select id="findLatest" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+        SELECT * FROM learning_units WHERE status = 1 ORDER BY created_at DESC LIMIT #{limit}
+    </select>
+
+</mapper>

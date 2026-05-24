@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.learning.mapper.AnnouncementMapper">
+
+    <resultMap id="BaseResultMap" type="com.learning.entity.Announcement">
+        <id column="id" property="id"/>
+        <result column="admin_id" property="adminId"/>
+        <result column="title" property="title"/>
+        <result column="content" property="content"/>
+        <result column="type" property="type"/>
+        <result column="status" property="status"/>
+        <result column="priority" property="priority"/>
+        <result column="likes_count" property="likesCount"/>
+        <result column="is_pinned" property="isPinned"/>
+        <result column="publish_at" property="publishAt"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <select id="findPublished" resultMap="BaseResultMap">
+        SELECT * FROM announcements
+        WHERE status = 1
+        AND (publish_at IS NULL OR publish_at &lt;= NOW())
+        <if test="type != null and type != ''">
+            AND type = #{type}
+        </if>
+        ORDER BY is_pinned DESC, priority DESC, publish_at DESC, created_at DESC
+    </select>
+
+    <select id="findPinned" resultMap="BaseResultMap">
+        SELECT * FROM announcements
+        WHERE status = 1 AND is_pinned = 1
+        ORDER BY priority DESC, created_at DESC
+    </select>
+
+    <select id="findById" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT * FROM announcements WHERE id = #{id}
+    </select>
+
+    <insert id="insert" parameterType="com.learning.entity.Announcement" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO announcements (admin_id, title, content, type, status, priority, likes_count, is_pinned, publish_at, created_at, updated_at)
+        VALUES (#{adminId}, #{title}, #{content}, #{type}, #{status}, #{priority}, 0, 0, #{publishAt}, NOW(), NOW())
+    </insert>
+
+    <update id="update" parameterType="com.learning.entity.Announcement">
+        UPDATE announcements SET
+            title = #{title}, content = #{content}, type = #{type},
+            status = #{status}, priority = #{priority}, publish_at = #{publishAt}, updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateLikesCount">
+        UPDATE announcements SET likes_count = COALESCE(likes_count, 0) + #{delta} WHERE id = #{id}
+    </update>
+
+    <update id="updatePinned">
+        UPDATE announcements SET is_pinned = #{isPinned}, updated_at = NOW() WHERE id = #{id}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.Long">
+        DELETE FROM announcements WHERE id = #{id}
+    </delete>
+
+    <select id="findAdminList" resultMap="BaseResultMap">
+        SELECT * FROM announcements WHERE 1=1
+        <if test="keyword != null and keyword != ''">
+            AND title LIKE CONCAT('%', #{keyword}, '%')
+        </if>
+        <if test="type != null and type != ''">
+            AND type = #{type}
+        </if>
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+        ORDER BY is_pinned DESC, priority DESC, created_at DESC
+    </select>
+
+    <select id="countAdminList" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM announcements WHERE 1=1
+        <if test="keyword != null and keyword != ''">
+            AND title LIKE CONCAT('%', #{keyword}, '%')
+        </if>
+        <if test="type != null and type != ''">
+            AND type = #{type}
+        </if>
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+    </select>
+
+</mapper>

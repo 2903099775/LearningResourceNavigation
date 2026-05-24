@@ -1,0 +1,2329 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>学习资源导航系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        
+        /* 加载动画 */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease-out;
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #007bff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        header {
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #007bff;
+            text-decoration: none;
+            line-height: 1.5;
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+            margin: 0;
+            padding: 0;
+            align-items: center;
+        }
+        
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        
+        .nav-links a:hover {
+            color: #007bff;
+        }
+        
+        /* 导航下拉菜单 */
+        .nav-links .dropdown { position: relative; }
+        .nav-links .dropdown-toggle { cursor: pointer; display: flex; align-items: center; gap: 4px; }
+        .nav-links .dropdown-toggle::after { content: '\25BC'; font-size: 0.6em; transition: transform 0.3s; }
+        .nav-links .dropdown:hover .dropdown-toggle::after { transform: rotate(180deg); }
+        .nav-links .dropdown-menu { display: none; position: absolute; top: 100%; left: -1rem; background: #fff; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); min-width: 180px; padding: 0.5rem 0; z-index: 1001; }
+        .nav-links .dropdown:hover .dropdown-menu { display: block; }
+        .nav-links .dropdown-menu a { display: block; padding: 0.6rem 1.2rem; color: #333; white-space: nowrap; border-radius: 4px; margin: 0 0.3rem; text-decoration: none; }
+        .nav-links .dropdown-menu a:hover { background: #f0f7ff; color: #007bff; }
+        .nav-links .dropdown-menu .menu-group { padding: 0.3rem 1.2rem 0.1rem; font-size: 0.75rem; color: #999; font-weight: 600; }
+        
+        /* 汉堡菜单 */
+        .hamburger {
+            display: none;
+            cursor: pointer;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .hamburger span {
+            display: block;
+            width: 25px;
+            height: 3px;
+            background-color: #333;
+            transition: all 0.3s;
+        }
+        
+        .hamburger.active span:nth-child(1) {
+            transform: rotate(45deg) translate(5px, 5px);
+        }
+        
+        .hamburger.active span:nth-child(2) {
+            opacity: 0;
+        }
+        
+        .hamburger.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(7px, -6px);
+        }
+        
+        @media (max-width: 768px) {
+            .hamburger {
+                display: flex;
+            }
+            
+            .nav-links {
+                position: fixed;
+                top: 70px;
+                left: -100%;
+                flex-direction: column;
+                background-color: white;
+                width: 100%;
+                text-align: center;
+                transition: 0.3s;
+                box-shadow: 0 10px 27px rgba(0, 0, 0, 0.05);
+                padding: 2rem 0;
+                z-index: 999;
+            }
+            
+            .nav-links.active {
+                left: 0;
+            }
+            
+            .nav-links li {
+                margin: 1rem 0;
+            }
+            
+            .search-box {
+                display: none;
+            }
+        }
+        
+        .search-box {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        
+        .search-box input {
+            padding: 0.5rem 1rem;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            outline: none;
+            width: 300px;
+            line-height: 1.5;
+        }
+        
+        .auth-buttons {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        
+        .user-menu {
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #007bff;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            transition: all 0.3s;
+            line-height: 1;
+        }
+        
+        .user-avatar:hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
+        }
+        
+        .user-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 0.5rem;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            min-width: 200px;
+            z-index: 1001;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s;
+        }
+        
+        .user-menu:hover .user-dropdown {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .user-dropdown-content {
+            padding: 1rem;
+        }
+        
+        .user-info {
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 1rem;
+        }
+        
+        .user-name {
+            font-weight: bold;
+            margin-bottom: 0.25rem;
+        }
+        
+        .user-email {
+            font-size: 0.8rem;
+            color: #666;
+        }
+        
+        .dropdown-menu {
+            list-style: none;
+        }
+        
+        .dropdown-menu li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .dropdown-menu li:last-child {
+            margin-bottom: 0;
+        }
+        
+        .dropdown-menu a {
+            display: block;
+            padding: 0.5rem;
+            text-decoration: none;
+            color: #333;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        
+        .dropdown-menu a:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .dropdown-divider {
+            height: 1px;
+            background-color: #eee;
+            margin: 0.75rem 0;
+        }
+        
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            transition: all 0.3s;
+            line-height: 1.5;
+        }
+        
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+
+        .btn-vip {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .btn-vip::before {
+            content: '💎';
+            font-size: 1rem;
+        }
+
+        .btn-vip:hover {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+        }
+
+        .btn-vip:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 6px rgba(245, 158, 11, 0.3);
+        }
+        
+        .btn-outline {
+            background-color: transparent;
+            color: #007bff;
+            border: 1px solid #007bff;
+        }
+        
+        .btn-outline:hover {
+            background-color: #007bff;
+            color: white;
+        }
+        
+        .btn-large {
+            padding: 0.75rem 1.5rem;
+            font-size: 1.1rem;
+        }
+        
+        .vip-section {
+            padding: 3rem 0;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+        
+        .vip-benefits {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .vip-benefit-card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+        
+        .vip-benefit-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .vip-benefit-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .vip-benefit-card h3 {
+            margin-bottom: 1rem;
+            color: #333;
+        }
+        
+        .vip-benefit-card p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .vip-cta {
+            text-align: center;
+            margin-top: 2rem;
+        }
+        
+        /* 登录提示弹窗 */
+        .login-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+        
+        .login-modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .login-modal-content {
+            background-color: white;
+            border-radius: 8px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            transform: translateY(-20px);
+            transition: transform 0.3s;
+        }
+        
+        .login-modal.show .login-modal-content {
+            transform: translateY(0);
+        }
+        
+        .login-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .login-modal-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        
+        .login-modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+        }
+        
+        .login-modal-footer {
+            margin-top: 1.5rem;
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+        }
+        
+        .banner {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4rem 0;
+            text-align: center;
+        }
+        
+        .banner h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .banner p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+        
+        .banner-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+        
+        .stats-section {
+            padding: 3rem 0;
+            background-color: white;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .stat-card {
+            text-align: center;
+            padding: 2rem;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            color: #666;
+        }
+        
+        .paths-section {
+            padding: 3rem 0;
+        }
+        
+        .section-title {
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            color: #333;
+        }
+        
+        .paths-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        
+        .path-card {
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+        
+        .path-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .path-cover {
+            height: 200px;
+            background-color: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+        }
+        
+        .path-content {
+            padding: 1.5rem;
+        }
+        
+        .path-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .path-description {
+            color: #666;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+        
+        .path-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: #999;
+        }
+        
+        .difficulty {
+            color: #ff6b6b;
+        }
+        
+        .learners {
+            color: #007bff;
+        }
+        
+        .resources-section {
+            padding: 3rem 0;
+            background-color: white;
+        }
+        
+        .resources-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+        
+        .resource-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 1.5rem;
+            transition: all 0.3s;
+        }
+        
+        .resource-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .resource-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .resource-meta {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.8rem;
+            color: #666;
+            margin-bottom: 1rem;
+        }
+        
+        .resource-type {
+            background-color: #e3f2fd;
+            color: #1976d2;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+        }
+        
+        footer {
+            border-top: 1px solid #eaeaea;
+            padding: 2rem 0;
+            margin-top: 4rem;
+            text-align: center;
+            background-color: #fff;
+        }
+
+        .footer-copy {
+            color: #999;
+            font-size: 0.85rem;
+            margin: 0;
+        }
+
+        /* 加载状态和错误处理 */
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+        
+        .error {
+            text-align: center;
+            padding: 2rem;
+            color: #ff6b6b;
+            background-color: #fff5f5;
+            border: 1px solid #ffcccc;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+        
+        /* 骨架屏效果 */
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: skeleton-loading 1.5s infinite;
+            border-radius: 4px;
+        }
+        
+        @keyframes skeleton-loading {
+            0% {
+                background-position: 200% 0;
+            }
+            100% {
+                background-position: -200% 0;
+            }
+        }
+        
+        .skeleton-title {
+            height: 24px;
+            margin-bottom: 12px;
+        }
+        
+        .skeleton-description {
+            height: 16px;
+            margin-bottom: 8px;
+        }
+        
+        .skeleton-meta {
+            height: 14px;
+        }
+        
+        /* 动画效果 */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* 按钮加载状态 */
+        .btn-loading {
+            position: relative;
+            pointer-events: none;
+        }
+        
+        .btn-loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 16px;
+            height: 16px;
+            margin: -8px 0 0 -8px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        /* 卡片悬停效果 */
+        .path-card, .resource-card, .vip-benefit-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .path-card:hover, .resource-card:hover, .vip-benefit-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+        }
+
+        .search-results-section {
+            padding: 3rem 0;
+            background-color: #f9f9f9;
+        }
+
+        .search-result-category {
+            margin-bottom: 2rem;
+        }
+
+        .search-result-category h3 {
+            margin-bottom: 1rem;
+            color: #333;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .search-result-category h3 .count {
+            font-size: 0.9rem;
+            color: #666;
+            font-weight: normal;
+        }
+
+        .search-result-item {
+            background-color: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .search-result-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .search-result-item h4 {
+            margin-bottom: 0.5rem;
+            color: #007bff;
+        }
+
+        .search-result-item p {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .search-result-item .meta {
+            font-size: 0.85rem;
+            color: #999;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 3rem;
+            color: #666;
+        }
+
+        .no-results-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .vip-benefit-card.interactive {
+            cursor: pointer;
+            position: relative;
+        }
+
+        .vip-benefit-card.interactive .vip-lock-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: var(--radius-lg, 8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 10;
+        }
+
+        .vip-benefit-card.interactive:hover .vip-lock-overlay {
+            opacity: 1;
+        }
+
+        .vip-benefit-card.interactive .vip-lock-overlay .lock-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .vip-benefit-card.interactive .vip-lock-overlay .lock-text {
+            color: white;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .comment-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(15, 23, 42, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            backdrop-filter: blur(4px);
+        }
+
+        .comment-modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .comment-modal-content {
+            background-color: white;
+            border-radius: 8px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 700px;
+            max-height: 80vh;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            transform: translateY(-20px);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid #eee;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .comment-modal.show .comment-modal-content {
+            transform: translateY(0);
+        }
+
+        .comment-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .comment-modal-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .comment-modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+            transition: color 0.3s;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+        }
+
+        .comment-modal-close:hover {
+            color: #ff4444;
+            background-color: rgba(239, 68, 68, 0.1);
+        }
+
+        .comment-input-area {
+            margin-bottom: 1.5rem;
+        }
+
+        .comment-input-area textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 1rem;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            outline: none;
+            font-family: inherit;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            resize: vertical;
+            background: #f8f9fa;
+        }
+
+        .comment-input-area textarea:focus {
+            border-color: #007bff;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.1);
+        }
+
+        .comment-submit-btn {
+            margin-top: 0.75rem;
+        }
+
+        .comment-list-container {
+            flex: 1;
+            overflow-y: auto;
+            max-height: 400px;
+        }
+
+        .comment-item {
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+            transition: background-color 0.3s;
+        }
+
+        .comment-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .comment-item:last-child {
+            border-bottom: none;
+        }
+
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .comment-author {
+            font-weight: 600;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .comment-author-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #007bff 0%, #6610f2 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        .comment-time {
+            font-size: 0.8rem;
+            color: #999;
+        }
+
+        .comment-content {
+            color: #666;
+            line-height: 1.6;
+            margin-left: 2.5rem;
+        }
+
+        .comment-replies {
+            margin-left: 2.5rem;
+            margin-top: 0.75rem;
+            padding-left: 1rem;
+            border-left: 2px solid #eee;
+        }
+
+        .comment-reply {
+            padding: 0.75rem 0;
+            border-bottom: 1px dashed #eee;
+        }
+
+        .comment-reply:last-child {
+            border-bottom: none;
+        }
+
+        .expert-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(15, 23, 42, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            backdrop-filter: blur(4px);
+        }
+
+        .expert-modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .expert-modal-content {
+            background-color: white;
+            border-radius: 8px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            transform: translateY(-20px);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid #eee;
+        }
+
+        .expert-modal.show .expert-modal-content {
+            transform: translateY(0);
+        }
+
+        .expert-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .expert-modal-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .expert-modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+            transition: color 0.3s;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+        }
+
+        .expert-modal-close:hover {
+            color: #ff4444;
+            background-color: rgba(239, 68, 68, 0.1);
+        }
+
+        .expert-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .expert-item {
+            display: flex;
+            gap: 1.5rem;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            border-radius: 8px;
+            border: 1px solid #eee;
+            transition: all 0.3s;
+        }
+
+        .expert-item:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .expert-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #007bff 0%, #6610f2 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .expert-info {
+            flex: 1;
+        }
+
+        .expert-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.25rem;
+        }
+
+        .expert-title {
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 0.75rem;
+        }
+
+        .expert-qrcode {
+            width: 120px;
+            height: 120px;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            color: #666;
+            text-align: center;
+            padding: 0.5rem;
+            flex-shrink: 0;
+        }
+
+        .expert-qrcode-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .expert-qrcode-placeholder .qr-icon {
+            font-size: 2.5rem;
+        }
+
+    </style>
+</head>
+<body>
+    <!-- 加载动画 -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+    </div>
+    
+    <header>
+        <div class="container">
+            <nav>
+                <a href="/" class="logo">学习资源导航</a>
+                
+                <!-- 汉堡菜单 -->
+                <div class="hamburger" id="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                
+                <ul class="nav-links" id="navLinks">
+                    <li><a href="/">首页</a></li>
+                    <li class="dropdown">
+                        <a href="/learning-domains" class="dropdown-toggle">学习领域</a>
+                        <div class="dropdown-menu" id="domainDropdown"></div>
+                    </li>
+                    <li><a href="/learning-path">学习路线</a></li>
+                    <li><a href="/community">社区</a></li>
+                    <li><a href="/vip" class="btn btn-vip">VIP充值</a></li>
+                </ul>
+                <div class="search-box">
+                    <input type="text" placeholder="搜索学习资源...">
+                </div>
+                <div class="auth-buttons">
+                    <div class="user-menu" id="userMenu">
+                        <div class="user-avatar" id="userAvatar">?</div>
+                        <div class="user-dropdown">
+                            <div class="user-dropdown-content">
+                                <div class="user-info" id="userInfo">
+                                    <div class="user-name">游客</div>
+                                    <div class="user-email">未登录</div>
+                                </div>
+                                <ul class="dropdown-menu" id="dropdownMenu">
+                                    <li><a href="/login" id="loginBtn">登录</a></li>
+                                    <li><a href="/register">注册</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 登录提示弹窗 -->
+                <div class="login-modal" id="loginModal">
+                    <div class="login-modal-content">
+                        <div class="login-modal-header">
+                            <h3 class="login-modal-title">请先登录</h3>
+                            <button class="login-modal-close" id="closeModal">&times;</button>
+                        </div>
+                        <div class="login-modal-body">
+                            <p>您需要登录后才能访问个人中心和其他功能。</p>
+                        </div>
+                        <div class="login-modal-footer">
+                            <a href="/login" class="btn btn-primary">去登录</a>
+                            <button class="btn btn-outline" id="cancelLogin">取消</button>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="banner">
+            <div class="container">
+                <h1>一站式学习资源导航</h1>
+                <p>让自学更高效、更系统</p>
+                <div class="banner-buttons">
+                    <a href="#popular-paths" class="btn btn-primary">开始探索</a>
+                </div>
+            </div>
+        </section>
+
+        <section class="search-results-section" id="searchResultsSection" style="display: none;">
+            <div class="container">
+                <h2 class="section-title">搜索结果</h2>
+                <div id="searchKeyword" style="margin-bottom: 1rem; color: #666;"></div>
+                
+                <div id="searchResults">
+                </div>
+            </div>
+        </section>
+
+        <section class="stats-section">
+            <div class="container">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number" data-stat="paths">100+</div>
+                        <div class="stat-label">技术路线</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" data-stat="resources">5000+</div>
+                        <div class="stat-label">优质资源</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" data-stat="learners">10000+</div>
+                        <div class="stat-label">学习者</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="paths-section" id="popular-paths">
+            <div class="container">
+                <h2 class="section-title">热门学习路线</h2>
+                <div class="paths-grid">
+                    <div class="path-card">
+                        <div class="path-cover">🔥</div>
+                        <div class="path-content">
+                            <div class="path-title">Java后端开发路线</div>
+                            <div class="path-description">从零基础到Java高级工程师的完整学习路径</div>
+                            <div class="path-meta">
+                                <span class="difficulty">⭐⭐⭐⭐</span>
+                                <span class="learners">2,358人学习</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="path-card">
+                        <div class="path-cover">🎨</div>
+                        <div class="path-content">
+                            <div class="path-title">前端开发路线</div>
+                            <div class="path-description">HTML/CSS/JavaScript到现代前端框架</div>
+                            <div class="path-meta">
+                                <span class="difficulty">⭐⭐⭐</span>
+                                <span class="learners">1,892人学习</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="path-card">
+                        <div class="path-cover">⚙️</div>
+                        <div class="path-content">
+                            <div class="path-title">运维工程师路线</div>
+                            <div class="path-description">Linux、网络、容器化技术全栈学习</div>
+                            <div class="path-meta">
+                                <span class="difficulty">⭐⭐⭐⭐</span>
+                                <span class="learners">1,245人学习</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="path-card">
+                        <div class="path-cover">🐞</div>
+                        <div class="path-content">
+                            <div class="path-title">软件测试路线</div>
+                            <div class="path-description">自动化测试、性能测试全流程学习</div>
+                            <div class="path-meta">
+                                <span class="difficulty">⭐⭐⭐</span>
+                                <span class="learners">987人学习</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="path-card">
+                        <div class="path-cover">💻</div>
+                        <div class="path-content">
+                            <div class="path-title">C++开发路线</div>
+                            <div class="path-description">C++基础到高级应用开发</div>
+                            <div class="path-meta">
+                                <span class="difficulty">⭐⭐⭐⭐⭐</span>
+                                <span class="learners">756人学习</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="path-card">
+                        <div class="path-cover">➕</div>
+                        <div class="path-content">
+                            <div class="path-title">更多路线</div>
+                            <div class="path-description">探索更多技术学习路径</div>
+                            <div class="path-meta">
+                                <span class="difficulty">--</span>
+                                <span class="learners">查看全部</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="resources-section">
+            <div class="container">
+                <h2 class="section-title">最新更新资源</h2>
+                <div class="resources-grid">
+                    <div class="resource-card">
+                        <div class="resource-title">Java环境搭建与HelloWorld</div>
+                        <div class="resource-meta">
+                            <span class="resource-type">视频</span>
+                            <span>2小时</span>
+                            <span>B站</span>
+                            <span>尚硅谷</span>
+                        </div>
+                        <p>Java开发环境搭建和第一个Java程序，适合零基础入门学习。</p>
+                    </div>
+                    <div class="resource-card">
+                        <div class="resource-title">Java基础语法详解</div>
+                        <div class="resource-meta">
+                            <span class="resource-type">视频</span>
+                            <span>8小时</span>
+                            <span>B站</span>
+                            <span>动力节点</span>
+                        </div>
+                        <p>Java基础语法全面讲解，包括变量、数据类型、流程控制等。</p>
+                    </div>
+                    <div class="resource-card">
+                        <div class="resource-title">Servlet入门教程</div>
+                        <div class="resource-meta">
+                            <span class="resource-type">视频</span>
+                            <span>10小时</span>
+                            <span>B站</span>
+                            <span>黑马程序员</span>
+                        </div>
+                        <p>Servlet基础和Web开发入门，掌握Java Web开发基础。</p>
+                    </div>
+                    <div class="resource-card">
+                        <div class="resource-title">Spring Boot入门到精通</div>
+                        <div class="resource-meta">
+                            <span class="resource-type">视频</span>
+                            <span>15小时</span>
+                            <span>B站</span>
+                            <span>尚硅谷</span>
+                        </div>
+                        <p>Spring Boot框架全面讲解，快速构建Java应用。</p>
+                    </div>
+                    <div class="resource-card">
+                        <div class="resource-title">MySQL数据库教程</div>
+                        <div class="resource-meta">
+                            <span class="resource-type">视频</span>
+                            <span>12小时</span>
+                            <span>B站</span>
+                            <span>尚硅谷</span>
+                        </div>
+                        <p>MySQL基础和高级特性，掌握数据库开发技能。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="vip-section">
+            <div class="container">
+                <h2 class="section-title">VIP会员特权</h2>
+                <div class="vip-benefits">
+                    <div class="vip-benefit-card">
+                        <div class="vip-benefit-icon">🎯</div>
+                        <h3>专属学习路线</h3>
+                        <p>获取VIP专属学习路线，包含更多高级内容和实战项目</p>
+                    </div>
+                    <div class="vip-benefit-card interactive" id="commentBenefitCard" onclick="openCommentModal()">
+                        <div class="vip-benefit-icon">�</div>
+                        <h3>评论与回复</h3>
+                        <p>参与学习社区讨论，与其他学习者交流心得</p>
+                        <div class="vip-lock-overlay" id="commentLockOverlay">
+                            <div class="lock-icon">🔒</div>
+                            <div class="lock-text">VIP专属功能</div>
+                        </div>
+                    </div>
+                    <div class="vip-benefit-card interactive" id="communityBenefitCard" onclick="openCommunityLink()">
+                        <div class="vip-benefit-icon">🌐</div>
+                        <h3>高级社区</h3>
+                        <p>进入VIP专属学习社区，与高手交流互动</p>
+                        <div class="vip-lock-overlay" id="communityLockOverlay">
+                            <div class="lock-icon">🔒</div>
+                            <div class="lock-text">VIP专属功能</div>
+                        </div>
+                    </div>
+                    <div class="vip-benefit-card interactive" id="expertBenefitCard" onclick="openExpertModal()">
+                        <div class="vip-benefit-icon">🤝</div>
+                        <h3>专家指导</h3>
+                        <p>获得专业导师一对一指导和答疑服务</p>
+                        <div class="vip-lock-overlay" id="expertLockOverlay">
+                            <div class="lock-icon">🔒</div>
+                            <div class="lock-text">VIP专属功能</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="vip-cta">
+                    <a href="/vip" class="btn btn-primary btn-large">立即开通VIP</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div class="comment-modal" id="commentModal">
+        <div class="comment-modal-content">
+            <div class="comment-modal-header">
+                <h3 class="comment-modal-title">💬 学习社区评论</h3>
+                <button class="comment-modal-close" onclick="closeCommentModal()">&times;</button>
+            </div>
+            <div class="comment-input-area">
+                <textarea id="commentInput" placeholder="分享你的学习心得或提问..."></textarea>
+                <button class="btn btn-primary comment-submit-btn" onclick="submitComment()">发表评论</button>
+            </div>
+            <div class="comment-list-container" id="commentList">
+                <div class="loading">加载中...</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="expert-modal" id="expertModal">
+        <div class="expert-modal-content">
+            <div class="expert-modal-header">
+                <h3 class="expert-modal-title">🤝 联系专家</h3>
+                <button class="expert-modal-close" onclick="closeExpertModal()">&times;</button>
+            </div>
+            <div class="expert-list">
+                <div class="expert-item">
+                    <div class="expert-avatar">张</div>
+                    <div class="expert-info">
+                        <div class="expert-name">张明</div>
+                        <div class="expert-title">高级Java工程师 | 10年经验</div>
+                        <div class="expert-qrcode">
+                            <div class="expert-qrcode-placeholder">
+                                <div class="qr-icon">📱</div>
+                                <div>微信扫码</div>
+                                <div style="font-size: 0.65rem;">expert_zhang</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="expert-item">
+                    <div class="expert-avatar">李</div>
+                    <div class="expert-info">
+                        <div class="expert-name">李华</div>
+                        <div class="expert-title">前端架构师 | 8年经验</div>
+                        <div class="expert-qrcode">
+                            <div class="expert-qrcode-placeholder">
+                                <div class="qr-icon">📱</div>
+                                <div>微信扫码</div>
+                                <div style="font-size: 0.65rem;">expert_lihua</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="expert-item">
+                    <div class="expert-avatar">王</div>
+                    <div class="expert-info">
+                        <div class="expert-name">王强</div>
+                        <div class="expert-title">全栈开发专家 | 12年经验</div>
+                        <div class="expert-qrcode">
+                            <div class="expert-qrcode-placeholder">
+                                <div class="qr-icon">📱</div>
+                                <div>微信扫码</div>
+                                <div style="font-size: 0.65rem;">expert_wangqiang</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p class="footer-copy">&copy; 2026 学习资源导航系统</p>
+        </div>
+    </footer>
+
+    <script>
+        // 全局变量
+        let user = JSON.parse(localStorage.getItem('user'));
+        let token = localStorage.getItem('token');
+        const cache = new Map();
+        const CACHE_DURATION = 5 * 60 * 1000; // 缓存5分钟
+
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            // 隐藏加载动画
+            setTimeout(function() {
+                const loadingOverlay = document.getElementById('loadingOverlay');
+                if (loadingOverlay) {
+                    loadingOverlay.classList.add('hidden');
+                }
+            }, 500); // 减少加载动画时间，提升用户体验
+
+            // 加载学习领域下拉菜单
+            loadDomainDropdown();
+            // 初始化汉堡菜单
+            initHamburgerMenu();
+            
+            // 初始化图片懒加载
+            initLazyLoading();
+            
+            // 搜索功能
+            initSearchFunction();
+            
+            // 并行执行网络请求，提升加载速度
+            Promise.all([
+                checkLoginStatus(),
+                loadLearningPaths(),
+                loadLatestResources(),
+                loadStats()
+            ]).catch(error => {
+                console.error('加载数据时出错:', error);
+            });
+            
+            // 初始化登录模态框事件
+            initLoginModal();
+        });
+        
+        // 初始化图片懒加载
+        function initLazyLoading() {
+            if ('IntersectionObserver' in window) {
+                const imageObserver = new IntersectionObserver((entries, observer) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            const img = entry.target;
+                            const src = img.getAttribute('data-src');
+                            if (src) {
+                                img.src = src;
+                                img.removeAttribute('data-src');
+                                img.classList.add('loaded');
+                            }
+                            observer.unobserve(img);
+                        }
+                    });
+                });
+                
+                document.querySelectorAll('img[data-src]').forEach(img => {
+                    imageObserver.observe(img);
+                });
+            }
+        }
+        
+        // 初始化搜索功能
+        function initSearchFunction() {
+            const searchInput = document.querySelector('.search-box input');
+            if (searchInput) {
+                searchInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        const searchTerm = searchInput.value.trim();
+                        if (searchTerm) {
+                            performSearch(searchTerm);
+                        }
+                    }
+                });
+            }
+        }
+
+        // 执行搜索
+        async function performSearch(keyword) {
+            const searchResultsSection = document.getElementById('searchResultsSection');
+            const searchResults = document.getElementById('searchResults');
+            const searchKeyword = document.getElementById('searchKeyword');
+            
+            searchResultsSection.style.display = 'block';
+            searchKeyword.innerHTML = `搜索关键词: <strong>"${keyword}"</strong>`;
+            searchResults.innerHTML = '<div class="loading">搜索中...</div>';
+            
+            try {
+                const response = await fetch(`/api/search?keyword=${encodeURIComponent(keyword)}`);
+                const result = await response.json();
+                
+                if (result.code === 200 && result.data) {
+                    displaySearchResults(result.data);
+                } else {
+                    searchResults.innerHTML = `
+                        <div class="no-results">
+                            <div class="no-results-icon">🔍</div>
+                            <p>搜索失败，请稍后重试</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('搜索失败:', error);
+                searchResults.innerHTML = `
+                    <div class="no-results">
+                        <div class="no-results-icon">❌</div>
+                        <p>搜索失败，请检查网络连接</p>
+                    </div>
+                `;
+            }
+        }
+
+        // 显示搜索结果
+        function displaySearchResults(data) {
+            const searchResults = document.getElementById('searchResults');
+            const { paths, units, pathCount, unitCount, totalCount } = data;
+            
+            if (totalCount === 0) {
+                searchResults.innerHTML = `
+                    <div class="no-results">
+                        <div class="no-results-icon">🔍</div>
+                        <p>未找到相关结果</p>
+                        <p style="font-size: 0.9rem; margin-top: 0.5rem;">试试其他关键词？</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            
+            if (paths && paths.length > 0) {
+                html += `
+                    <div class="search-result-category">
+                        <h3>📚 学习路线 <span class="count">(找到 ${pathCount} 个)</span></h3>
+                `;
+                
+                paths.forEach(path => {
+                    html += `
+                        <div class="search-result-item" onclick="window.location.href='/learning-path?id=${path.id}'">
+                            <h4>${highlightKeyword(path.title, data.keyword)}</h4>
+                            <p>${highlightKeyword(path.description || '暂无描述', data.keyword)}</p>
+                            <div class="meta">
+                                <span>难度: ${path.difficulty || '未知'}</span>
+                                <span style="margin-left: 1rem;">时长: ${path.durationWeeks || '?'} 周</span>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+            }
+            
+            if (units && units.length > 0) {
+                html += `
+                    <div class="search-result-category">
+                        <h3>📖 学习单元 <span class="count">(找到 ${unitCount} 个)</span></h3>
+                `;
+                
+                units.forEach(unit => {
+                    html += `
+                        <div class="search-result-item" onclick="window.location.href='/learning-unit?id=${unit.id}'">
+                            <h4>${highlightKeyword(unit.title, data.keyword)}</h4>
+                            <p>${highlightKeyword(unit.description || '暂无描述', data.keyword)}</p>
+                            <div class="meta">
+                                <span>类型: ${unit.type || '未知'}</span>
+                                <span style="margin-left: 1rem;">平台: ${unit.platform || '未知'}</span>
+                                ${unit.durationMinutes ? `<span style="margin-left: 1rem;">时长: ${unit.durationMinutes} 分钟</span>` : ''}
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+            }
+            
+            searchResults.innerHTML = html;
+            
+            searchResults.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        // 高亮关键词
+        function highlightKeyword(text, keyword) {
+            if (!keyword || !text) return text;
+            const regex = new RegExp(`(${keyword})`, 'gi');
+            return text.replace(regex, '<mark style="background-color: #ffeb3b; padding: 0 2px; border-radius: 2px;">$1</mark>');
+        }
+        
+        // 加载统计数据
+        function loadStats() {
+            const cacheKey = 'stats';
+            const cachedData = getCachedData(cacheKey);
+            
+            if (cachedData) {
+                updateStats(cachedData);
+                return Promise.resolve();
+            }
+            
+            return fetch('/api/public/stats')
+                .then(response => response.json())
+                .then(result => {
+                    if (result.code === 200 && result.data) {
+                        const stats = {
+                            paths: result.data.paths,
+                            resources: result.data.resources,
+                            learners: result.data.learners
+                        };
+                        cacheData(cacheKey, stats);
+                        updateStats(stats);
+                    }
+                })
+                .catch(error => {
+                    console.error('获取统计数据失败:', error);
+                });
+        }
+        
+        function updateStats(stats) {
+            const pathsEl = document.querySelector('[data-stat="paths"]');
+            const resourcesEl = document.querySelector('[data-stat="resources"]');
+            const learnersEl = document.querySelector('[data-stat="learners"]');
+            
+            if (pathsEl) pathsEl.textContent = stats.paths + '+';
+            if (resourcesEl) resourcesEl.textContent = stats.resources + '+';
+            if (learnersEl) learnersEl.textContent = stats.learners + '+';
+        }
+        
+        // 缓存数据
+        function cacheData(key, data) {
+            cache.set(key, {
+                data: data,
+                timestamp: Date.now()
+            });
+        }
+        
+        // 获取缓存数据
+        function getCachedData(key) {
+            const cached = cache.get(key);
+            if (cached && (Date.now() - cached.timestamp) < CACHE_DURATION) {
+                return cached.data;
+            }
+            cache.delete(key);
+            return null;
+        }
+        
+        // 初始化汉堡菜单
+        function initHamburgerMenu() {
+            const hamburger = document.getElementById('hamburger');
+            const navLinks = document.getElementById('navLinks');
+            
+            if (hamburger && navLinks) {
+                hamburger.addEventListener('click', function() {
+                    hamburger.classList.toggle('active');
+                    navLinks.classList.toggle('active');
+                });
+                
+                // 点击菜单项后关闭菜单
+                const menuItems = navLinks.querySelectorAll('a');
+                menuItems.forEach(item => {
+                    item.addEventListener('click', function() {
+                        hamburger.classList.remove('active');
+                        navLinks.classList.remove('active');
+                    });
+                });
+            }
+        }
+
+        // 检查登录状态
+        function checkLoginStatus() {
+            // 每次检查前重新从localStorage获取token，确保使用最新的token
+            token = localStorage.getItem('token');
+            if (token) {
+                // 验证token有效性
+                return fetch('/api/user/profile', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                })
+                .then(response => {
+                    // 只在认证失败时清除token，服务端错误(500等)不清
+                    if (response.status === 401 || response.status === 403) {
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('user');
+                        token = null;
+                        user = null;
+                        updateUserMenu();
+                        return null;
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data && data.code === 200) {
+                        user = data.data;
+                        localStorage.setItem('user', JSON.stringify(user));
+                        updateUserMenu();
+                    }
+                    // 非200的code不清token（可能是服务端临时错误）
+                })
+                .catch(error => {
+                    console.error('验证登录状态失败:', error);
+                    // 网络错误不清token，等下次重试
+                });
+            }
+            // 无token时也要更新菜单显示为游客
+            updateUserMenu();
+            return Promise.resolve();
+        }
+
+        // 更新用户菜单
+        function updateUserMenu() {
+            const userAvatar = document.getElementById('userAvatar');
+            const userInfo = document.getElementById('userInfo');
+            const dropdownMenu = document.getElementById('dropdownMenu');
+            
+            if (user) {
+                // 已登录用户
+                if (user.avatar) {
+                    userAvatar.innerHTML = `<img src="${user.avatar + (user.avatar.includes('?') ? '&' : '?') + 't=' + Date.now()}" alt="${user.username}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+                } else {
+                    userAvatar.textContent = user.username.charAt(0).toUpperCase();
+                }
+                const isVip = user.vipExpireDate && new Date(user.vipExpireDate) > new Date();
+                userInfo.innerHTML = `
+                    <div class="user-name">${user.username}${isVip ? ' <span style="background:linear-gradient(135deg,#f5af19,#f12711);color:#fff;padding:2px 8px;border-radius:10px;font-size:12px;font-weight:bold;margin-left:6px;">VIP</span>' : ''}</div>
+                    <div class="user-email">${user.email}</div>
+                `;
+                dropdownMenu.innerHTML = `
+                    <li><a href="/profile">个人中心</a></li>
+                    <li><a href="#">我的学习</a></li>
+                    <li><a href="#">我的收藏</a></li>
+                    <div class="dropdown-divider"></div>
+                    <li><a href="#" id="logoutBtn">退出登录</a></li>
+                `;
+                
+                // 添加退出登录事件
+                document.getElementById('logoutBtn').addEventListener('click', function(e) {
+                    e.preventDefault();
+                    localStorage.removeItem('token');
+                    token = null;
+                    user = null;
+                    updateUserMenu();
+                    alert('已退出登录');
+                });
+            } else {
+                // 未登录用户
+                userAvatar.textContent = '?';
+                userInfo.innerHTML = `
+                    <div class="user-name">游客</div>
+                    <div class="user-email">未登录</div>
+                `;
+                dropdownMenu.innerHTML = `
+                    <li><a href="/login" id="loginBtn">登录</a></li>
+                    <li><a href="/register">注册</a></li>
+                `;
+                
+                // 登录按钮直接跳转到登录页面，不再显示模态框
+                document.getElementById('loginBtn').href = '/login';
+            }
+        }
+        
+        // 显示登录提示弹窗
+        function showLoginModal() {
+            const loginModal = document.getElementById('loginModal');
+            loginModal.classList.add('show');
+        }
+        
+        // 隐藏登录提示弹窗
+        function hideLoginModal() {
+            const loginModal = document.getElementById('loginModal');
+            loginModal.classList.remove('show');
+        }
+        
+        // 初始化登录模态框事件
+        function initLoginModal() {
+            const closeModal = document.getElementById('closeModal');
+            const cancelLogin = document.getElementById('cancelLogin');
+            const loginModal = document.getElementById('loginModal');
+            
+            if (closeModal) {
+                closeModal.addEventListener('click', hideLoginModal);
+            }
+            
+            if (cancelLogin) {
+                cancelLogin.addEventListener('click', hideLoginModal);
+            }
+            
+            // 点击模态框外部关闭
+            if (loginModal) {
+                loginModal.addEventListener('click', function(e) {
+                    if (e.target === loginModal) {
+                        hideLoginModal();
+                    }
+                });
+            }
+        }
+
+        // 加载热门学习路径（实时数据，不使用缓存）
+        function loadLearningPaths() {
+            // 显示骨架屏
+            const pathsGrid = document.querySelector('.paths-grid');
+            if (pathsGrid) {
+                pathsGrid.innerHTML = generateSkeletonPaths();
+            }
+            
+            return fetch('/api/paths/hot?limit=6')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('网络响应错误');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.code === 200) {
+                        renderPaths(data.data);
+                    } else {
+                        console.error('加载学习路径失败:', data.message);
+                        if (pathsGrid) {
+                            pathsGrid.innerHTML = '<div class="error">加载失败，请刷新页面重试</div>';
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('加载学习路径失败:', error);
+                    if (pathsGrid) {
+                        pathsGrid.innerHTML = '<div class="error">网络错误，请检查网络连接后重试</div>';
+                    }
+                });
+        }
+        
+        // 生成学习路径骨架屏
+        function generateSkeletonPaths() {
+            let skeletonHTML = '';
+            for (let i = 0; i < 6; i++) {
+                skeletonHTML += `
+                    <div class="path-card">
+                        <div class="path-cover">
+                            <div class="skeleton" style="width: 100%; height: 100%;"></div>
+                        </div>
+                        <div class="path-content">
+                            <div class="skeleton skeleton-title"></div>
+                            <div class="skeleton skeleton-description"></div>
+                            <div class="skeleton skeleton-description"></div>
+                            <div class="skeleton skeleton-meta"></div>
+                        </div>
+                    </div>
+                `;
+            }
+            return skeletonHTML;
+        }
+
+        // 渲染学习路径列表
+        function renderPaths(paths) {
+            const pathsGrid = document.querySelector('.paths-grid');
+            if (!pathsGrid) return;
+            
+            pathsGrid.innerHTML = '';
+
+            paths.forEach((path, index) => {
+                const pathCard = document.createElement('div');
+                pathCard.className = 'path-card fade-in';
+                pathCard.style.animationDelay = `${index * 0.1}s`;
+                pathCard.onclick = () => window.location.href = `/learning-path?id=${path.id}`;
+                pathCard.setAttribute('data-path-id', path.id);
+
+                // 根据路径类型选择图标
+                let icon = '🔥';
+                if (path.title.includes('前端')) icon = '🎨';
+                else if (path.title.includes('运维')) icon = '⚙️';
+                else if (path.title.includes('测试')) icon = '🐞';
+                else if (path.title.includes('C++')) icon = '💻';
+
+                pathCard.innerHTML = `
+                    <div class="path-cover">${icon}</div>
+                    <div class="path-content">
+                        <div class="path-title">${path.title}</div>
+                        <div class="path-description">${path.description}</div>
+                        <div class="path-meta">
+                            <span class="difficulty">${'⭐'.repeat(path.difficulty || 3)}</span>
+                            <span class="learners">${path.totalViewCount || 0}人观看</span>
+                        </div>
+                    </div>
+                `;
+                pathsGrid.appendChild(pathCard);
+            });
+        }
+
+        // 加载最新资源
+        function loadLatestResources() {
+            const cacheKey = 'latest-resources';
+            const cachedData = getCachedData(cacheKey);
+            
+            if (cachedData) {
+                renderResources(cachedData);
+                return Promise.resolve();
+            }
+            
+            // 显示骨架屏
+            const resourcesGrid = document.querySelector('.resources-grid');
+            if (resourcesGrid) {
+                resourcesGrid.innerHTML = generateSkeletonResources();
+            }
+            
+            // 调用获取最新资源的API
+            return fetch('/api/resources/latest?limit=5')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('网络响应错误');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // 转换数据格式以匹配前端期望的格式
+                    const resources = data.map(resource => ({
+                        id: resource.id,
+                        title: resource.title,
+                        type: resource.resourceType,
+                        duration: resource.duration ? resource.duration + '分钟' : '未知',
+                        platform: resource.sourcePlatform || '未知',
+                        provider: resource.author || '未知',
+                        description: resource.description
+                    }));
+                    
+                    // 缓存数据
+                    cacheData(cacheKey, resources);
+                    renderResources(resources);
+                })
+                .catch(error => {
+                    console.error('加载最新资源失败:', error);
+                    if (resourcesGrid) {
+                        resourcesGrid.innerHTML = '<div class="error">网络错误，请检查网络连接后重试</div>';
+                    }
+                });
+        }
+        
+        // 生成资源骨架屏
+        function generateSkeletonResources() {
+            let skeletonHTML = '';
+            for (let i = 0; i < 5; i++) {
+                skeletonHTML += `
+                    <div class="resource-card">
+                        <div class="skeleton skeleton-title"></div>
+                        <div class="resource-meta">
+                            <span class="skeleton" style="width: 60px; height: 20px; display: inline-block; margin-right: 10px;"></span>
+                            <span class="skeleton" style="width: 80px; height: 20px; display: inline-block; margin-right: 10px;"></span>
+                            <span class="skeleton" style="width: 60px; height: 20px; display: inline-block; margin-right: 10px;"></span>
+                            <span class="skeleton" style="width: 80px; height: 20px; display: inline-block;"></span>
+                        </div>
+                        <div class="skeleton skeleton-description"></div>
+                    </div>
+                `;
+            }
+            return skeletonHTML;
+        }
+
+        // 渲染资源列表
+        function renderResources(resources) {
+            const resourcesGrid = document.querySelector('.resources-grid');
+            if (!resourcesGrid) return;
+            
+            resourcesGrid.innerHTML = '';
+
+            resources.forEach((resource, index) => {
+                const resourceCard = document.createElement('div');
+                resourceCard.className = 'resource-card fade-in';
+                resourceCard.style.animationDelay = `${index * 0.1}s`;
+                resourceCard.onclick = () => window.location.href = `/learning-unit?id=${resource.id}`;
+                resourceCard.setAttribute('data-resource-id', resource.id);
+
+                resourceCard.innerHTML = `
+                    <div class="resource-title">${resource.title}</div>
+                    <div class="resource-meta">
+                        <span class="resource-type">${resource.type}</span>
+                        <span>${resource.duration}</span>
+                        <span>${resource.platform}</span>
+                        <span>${resource.provider}</span>
+                    </div>
+                    <p>${resource.description || ''}</p>
+                `;
+                resourcesGrid.appendChild(resourceCard);
+            });
+        }
+
+        // 加载学习领域下拉菜单
+        async function loadDomainDropdown() {
+            try {
+                const [catRes, subRes] = await Promise.all([
+                    fetch('/api/categories/active'),
+                    fetch('/api/subcategories/all')
+                ]);
+                const catData = await catRes.json();
+                const subData = await subRes.json();
+                if (catData.code !== 200 || subData.code !== 200) return;
+                const categories = catData.data || [];
+                const subcategories = subData.data || [];
+                const dropdown = document.getElementById('domainDropdown');
+                if (!dropdown) return;
+                categories.forEach(cat => {
+                    const catSubs = subcategories.filter(s => s.categoryId === cat.id);
+                    if (catSubs.length > 0) {
+                        const group = document.createElement('div');
+                        group.className = 'menu-group';
+                        group.textContent = cat.name;
+                        dropdown.appendChild(group);
+                    }
+                    catSubs.forEach(sub => {
+                        const a = document.createElement('a');
+                        a.href = '/learning-subdomain?id=' + sub.id;
+                        a.textContent = sub.name;
+                        dropdown.appendChild(a);
+                    });
+                });
+            } catch(e) { /* silently fail */ }
+        }
+
+        function isVipUser() {
+            if (!user) return false;
+            if (user.role === 'VIP') return true;
+            if (user.role === 'ADMIN') return true;
+            if (user.vipExpireDate) {
+                const expireDate = new Date(user.vipExpireDate);
+                return expireDate > new Date();
+            }
+            return false;
+        }
+
+        function updateVipBenefitLocks() {
+            const isVip = isVipUser();
+            const cards = [
+                { cardId: 'commentBenefitCard', lockId: 'commentLockOverlay' },
+                { cardId: 'communityBenefitCard', lockId: 'communityLockOverlay' },
+                { cardId: 'expertBenefitCard', lockId: 'expertLockOverlay' }
+            ];
+            cards.forEach(({ cardId, lockId }) => {
+                const card = document.getElementById(cardId);
+                const lock = document.getElementById(lockId);
+                if (!card || !lock) return;
+                if (isVip) {
+                    lock.style.display = 'none';
+                    card.style.cursor = 'pointer';
+                } else {
+                    lock.style.display = 'flex';
+                    // 保持 CSS 中的 hover 效果即可，不需要额外 JS
+                    lock.style.opacity = '0';
+                    card.style.cursor = 'pointer';
+                }
+            });
+        }
+
+        function openCommentModal() {
+            if (!user) {
+                showLoginModal();
+                return;
+            }
+            if (!isVipUser()) {
+                alert('此功能仅限VIP用户使用，请先开通VIP');
+                return;
+            }
+            const modal = document.getElementById('commentModal');
+            modal.classList.add('show');
+            loadComments();
+        }
+
+        function closeCommentModal() {
+            document.getElementById('commentModal').classList.remove('show');
+        }
+
+        function openExpertModal() {
+            if (!user) {
+                showLoginModal();
+                return;
+            }
+            if (!isVipUser()) {
+                alert('此功能仅限VIP用户使用，请先开通VIP');
+                return;
+            }
+            document.getElementById('expertModal').classList.add('show');
+        }
+
+        function closeExpertModal() {
+            document.getElementById('expertModal').classList.remove('show');
+        }
+
+        function openCommunityLink() {
+            if (!user) {
+                showLoginModal();
+                return;
+            }
+            if (!isVipUser()) {
+                alert('此功能仅限VIP用户使用，请先开通VIP');
+                return;
+            }
+            window.location.href = '/community';
+        }
+
+        var mockComments = [
+            { id: 1, author: '小明', content: '这个学习平台真的很不错，资源很全面！', time: '2小时前', replies: [
+                { author: '小红', content: '同感，特别是VIP路线，质量很高', time: '1小时前' }
+            ]},
+            { id: 2, author: '张三', content: '请问Python全栈路线适合零基础吗？', time: '5小时前', replies: [] },
+            { id: 3, author: '李四', content: '刚刚完成了Go语言微服务项目，收获很大！', time: '1天前', replies: [
+                { author: '王五', content: '恭喜！这个项目确实很有挑战性', time: '20小时前' },
+                { author: '赵六', content: '求分享学习经验', time: '18小时前' }
+            ]}
+        ];
+
+        function loadComments() {
+            const container = document.getElementById('commentList');
+            let html = '';
+            mockComments.forEach(comment => {
+                html += `
+                    <div class="comment-item">
+                        <div class="comment-header">
+                            <div class="comment-author">
+                                <div class="comment-author-avatar">${comment.author.charAt(0)}</div>
+                                ${comment.author}
+                            </div>
+                            <span class="comment-time">${comment.time}</span>
+                        </div>
+                        <div class="comment-content">${comment.content}</div>
+                `;
+                if (comment.replies && comment.replies.length > 0) {
+                    html += '<div class="comment-replies">';
+                    comment.replies.forEach(reply => {
+                        html += `
+                            <div class="comment-reply">
+                                <div class="comment-header">
+                                    <div class="comment-author">
+                                        <div class="comment-author-avatar">${reply.author.charAt(0)}</div>
+                                        ${reply.author}
+                                    </div>
+                                    <span class="comment-time">${reply.time}</span>
+                                </div>
+                                <div class="comment-content">${reply.content}</div>
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                }
+                html += '</div>';
+            });
+            container.innerHTML = html;
+        }
+
+        function submitComment() {
+            const input = document.getElementById('commentInput');
+            const content = input.value.trim();
+            if (!content) {
+                alert('请输入评论内容');
+                return;
+            }
+            const newComment = {
+                id: mockComments.length + 1,
+                author: user ? user.username : '匿名用户',
+                content: content,
+                time: '刚刚',
+                replies: []
+            };
+            mockComments.unshift(newComment);
+            input.value = '';
+            loadComments();
+        }
+
+        document.addEventListener('click', function(e) {
+            const commentModal = document.getElementById('commentModal');
+            const expertModal = document.getElementById('expertModal');
+            if (e.target === commentModal) {
+                closeCommentModal();
+            }
+            if (e.target === expertModal) {
+                closeExpertModal();
+            }
+        });
+
+        const origUpdateUserMenu = updateUserMenu;
+        updateUserMenu = function() {
+            origUpdateUserMenu();
+            updateVipBenefitLocks();
+        };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            updateVipBenefitLocks();
+        });
+    </script>
+</body>
+</html>

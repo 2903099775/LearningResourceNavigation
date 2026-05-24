@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.learning.mapper.LearningUnitMapper">
+
+    <resultMap id="BaseResultMap" type="com.learning.entity.LearningUnit">
+        <id column="id" property="id"/>
+        <result column="stage_id" property="stageId"/>
+        <result column="title" property="title"/>
+        <result column="type" property="type"/>
+        <result column="content_type" property="contentType"/>
+        <result column="external_url" property="externalUrl"/>
+        <result column="platform" property="platform"/>
+        <result column="author" property="author"/>
+        <result column="duration_minutes" property="durationMinutes"/>
+        <result column="description" property="description"/>
+        <result column="sort_order" property="sortOrder"/>
+        <result column="is_vip_only" property="isVipOnly"/>
+        <result column="status" property="status"/>
+        <result column="view_count" property="viewCount"/>
+        <result column="created_at" property="createdAt"/>
+    </resultMap>
+
+    <select id="findByStageId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT id, stage_id, title, type, content_type, external_url, platform, author, duration_minutes, description, sort_order, is_vip_only, status, view_count, created_at
+        FROM learning_units
+        WHERE stage_id = #{stageId}
+        ORDER BY sort_order ASC
+    </select>
+
+    <select id="findByPathId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT lu.id, lu.stage_id, lu.title, lu.type, lu.content_type, lu.external_url, lu.platform, lu.author, lu.duration_minutes, lu.description, lu.sort_order, lu.is_vip_only, lu.status, lu.view_count, lu.created_at
+        FROM learning_units lu
+        JOIN path_stages ps ON lu.stage_id = ps.id
+        WHERE ps.path_id = #{pathId}
+        ORDER BY ps.sort_order ASC, lu.sort_order ASC
+    </select>
+
+    <select id="findById" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT id, stage_id, title, type, content_type, external_url, platform, author, duration_minutes, description, sort_order, is_vip_only, status, view_count, created_at
+        FROM learning_units
+        WHERE id = #{id}
+    </select>
+
+    <insert id="insert" parameterType="com.learning.entity.LearningUnit" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO learning_units (stage_id, title, type, content_type, external_url, platform, author, duration_minutes, description, sort_order, is_vip_only, status, view_count)
+        VALUES (#{stageId}, #{title}, #{type}, #{contentType}, #{externalUrl}, #{platform}, #{author}, #{durationMinutes}, #{description}, #{sortOrder}, #{isVipOnly}, #{status}, #{viewCount})
+    </insert>
+
+    <update id="update" parameterType="com.learning.entity.LearningUnit">
+        UPDATE learning_units
+        SET stage_id = #{stageId},
+            title = #{title},
+            type = #{type},
+            content_type = #{contentType},
+            external_url = #{externalUrl},
+            platform = #{platform},
+            author = #{author},
+            duration_minutes = #{durationMinutes},
+            description = #{description},
+            sort_order = #{sortOrder},
+            is_vip_only = #{isVipOnly},
+            status = #{status},
+            view_count = #{viewCount}
+        WHERE id = #{id}
+    </update>
+
+    <update id="incrementViewCount" parameterType="java.lang.Long">
+        UPDATE learning_units
+        SET view_count = view_count + 1
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.Long">
+        DELETE FROM learning_units WHERE id = #{id}
+    </delete>
+
+    <delete id="deleteByStageId" parameterType="java.lang.Long">
+        DELETE FROM learning_units WHERE stage_id = #{stageId}
+    </delete>
+
+    <delete id="deleteByPathId" parameterType="java.lang.Long">
+        DELETE lu FROM learning_units lu
+        JOIN path_stages ps ON lu.stage_id = ps.id
+        WHERE ps.path_id = #{pathId}
+    </delete>
+
+    <select id="findByType" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT id, stage_id, title, type, content_type, external_url, platform, author, duration_minutes, description, sort_order, is_vip_only, status, view_count, created_at
+        FROM learning_units
+        WHERE type = #{type}
+        ORDER BY sort_order ASC
+    </select>
+
+    <select id="findByPlatform" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT id, stage_id, title, type, content_type, external_url, platform, author, duration_minutes, description, sort_order, is_vip_only, status, view_count, created_at
+        FROM learning_units
+        WHERE platform = #{platform}
+        ORDER BY sort_order ASC
+    </select>
+
+    <select id="findVipOnly" resultMap="BaseResultMap">
+        SELECT id, stage_id, title, type, content_type, external_url, platform, author, duration_minutes, description, sort_order, is_vip_only, status, view_count, created_at
+        FROM learning_units
+        WHERE is_vip_only = 1
+        ORDER BY created_at DESC
+    </select>
+
+    <select id="searchByTitle" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT id, stage_id, title, type, content_type, external_url, platform, author, duration_minutes, description, sort_order, is_vip_only, status, view_count, created_at
+        FROM learning_units
+        WHERE title LIKE CONCAT('%', #{keyword}, '%')
+        ORDER BY sort_order ASC
+    </select>
+
+    <select id="countByStageId" parameterType="java.lang.Long" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM learning_units WHERE stage_id = #{stageId}
+    </select>
+
+    <select id="countByPathId" parameterType="java.lang.Long" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM learning_units lu
+        JOIN path_stages ps ON lu.stage_id = ps.id
+        WHERE ps.path_id = #{pathId}
+    </select>
+
+    <select id="countTotal" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM learning_units
+    </select>
+
+    <select id="selectList" resultMap="BaseResultMap">
+        SELECT id, stage_id, title, type, content_type, external_url, platform, author, duration_minutes, description, sort_order, is_vip_only, status, view_count, created_at
+        FROM learning_units
+        WHERE 1=1
+        <if test="keyword != null and keyword != ''">
+            AND title LIKE CONCAT('%', #{keyword}, '%')
+        </if>
+        <if test="type != null and type != ''">
+            AND type = #{type}
+        </if>
+        <if test="platform != null and platform != ''">
+            AND platform = #{platform}
+        </if>
+        ORDER BY created_at DESC
+        LIMIT #{offset}, #{size}
+    </select>
+
+    <select id="countWithFilters" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM learning_units
+        WHERE 1=1
+        <if test="keyword != null and keyword != ''">
+            AND title LIKE CONCAT('%', #{keyword}, '%')
+        </if>
+        <if test="type != null and type != ''">
+            AND type = #{type}
+        </if>
+        <if test="platform != null and platform != ''">
+            AND platform = #{platform}
+        </if>
+    </select>
+
+    <select id="findAll" resultMap="BaseResultMap">
+        SELECT id, stage_id, title, type, content_type, external_url, platform, author, duration_minutes, description, sort_order, is_vip_only, status, view_count, created_at
+        FROM learning_units
+        ORDER BY created_at DESC
+    </select>
+
+    <select id="findAllWithDetails" resultType="java.util.Map">
+        SELECT id, title, type, is_vip_only, view_count, created_at 
+        FROM learning_units 
+        ORDER BY created_at DESC
+    </select>
+
+</mapper>

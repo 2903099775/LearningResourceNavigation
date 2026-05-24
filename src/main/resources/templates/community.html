@@ -1,0 +1,1810 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>社区 - 学习资源导航系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        header {
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #007bff;
+            text-decoration: none;
+            line-height: 1.5;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+            margin: 0;
+            padding: 0;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #007bff;
+        }
+
+        .user-menu {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .auth-buttons {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #007bff;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            transition: all 0.3s;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .user-avatar:hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
+        }
+
+        .user-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 0.5rem;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            min-width: 200px;
+            z-index: 1001;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s;
+        }
+
+        .user-menu:hover .user-dropdown {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .user-dropdown-content {
+            padding: 1rem;
+        }
+
+        .user-info {
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 1rem;
+        }
+
+        .user-name {
+            font-weight: bold;
+            margin-bottom: 0.25rem;
+        }
+
+        .user-email {
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        .dropdown-menu {
+            list-style: none;
+        }
+
+        .dropdown-menu li {
+            margin-bottom: 0.5rem;
+        }
+
+        .dropdown-menu li:last-child {
+            margin-bottom: 0;
+        }
+
+        .dropdown-menu a {
+            display: block;
+            padding: 0.5rem;
+            text-decoration: none;
+            color: #333;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .dropdown-menu a:hover {
+            background-color: #f8f9fa;
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background-color: #eee;
+            margin: 0.75rem 0;
+        }
+
+        .community-layout {
+            display: flex;
+            gap: 20px;
+            padding: 20px 0;
+        }
+
+        .main-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .sidebar {
+            width: 300px;
+            flex-shrink: 0;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        .announcement-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+        }
+
+        .announcement-card .card-header {
+            border-bottom-color: rgba(255,255,255,0.2);
+        }
+
+        .announcement-item {
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .announcement-item:last-child {
+            border-bottom: none;
+        }
+
+        .announcement-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .announcement-title .pin-icon {
+            color: #ffd700;
+        }
+
+        .announcement-meta {
+            font-size: 0.85rem;
+            opacity: 0.8;
+        }
+
+        .post-form {
+            margin-bottom: 20px;
+        }
+
+        .post-form textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            resize: vertical;
+            font-family: inherit;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .post-form textarea:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        .post-form input[type="text"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .post-form input[type="text"]:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        .post-form-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+
+        .btn-vip {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .btn-vip::before {
+            content: '💎';
+            font-size: 1rem;
+        }
+
+        .btn-vip:hover {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+        }
+
+        .btn-vip:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 6px rgba(245, 158, 11, 0.3);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            color: #007bff;
+            border: 1px solid #007bff;
+        }
+
+        .btn-outline:hover {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .filter-tab {
+            padding: 8px 16px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 14px;
+            color: #666;
+            border-radius: 20px;
+            transition: all 0.3s;
+        }
+
+        .filter-tab.active {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .filter-tab:hover:not(.active) {
+            background-color: #f0f0f0;
+        }
+
+        .post-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .post-card {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            padding: 20px;
+            transition: all 0.3s;
+        }
+
+        .post-card:hover {
+            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+            transform: translateY(-2px);
+        }
+
+        .post-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .post-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background-color: #e3f2fd;
+            color: #1976d2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .post-author-info {
+            flex: 1;
+        }
+
+        .post-author-name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .post-time {
+            font-size: 0.85rem;
+            color: #999;
+        }
+
+        .post-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .post-content {
+            color: #555;
+            line-height: 1.8;
+            margin-bottom: 15px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .post-images {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        .post-image {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .post-actions {
+            display: flex;
+            gap: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .post-action {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #666;
+            cursor: pointer;
+            transition: color 0.3s;
+            user-select: none;
+        }
+
+        .post-action:hover {
+            color: #007bff;
+        }
+
+        .post-action.liked {
+            color: #ff4757;
+        }
+
+        .post-action-icon {
+            font-size: 18px;
+        }
+
+        .pinned-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .admin-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background-color: #007bff;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .login-tip {
+            background-color: #e3f2fd;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .login-tip a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .login-tip a:hover {
+            text-decoration: underline;
+        }
+
+        .comment-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        .comment-input-wrapper {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .comment-input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            outline: none;
+        }
+
+        .comment-input:focus {
+            border-color: #007bff;
+        }
+
+        .comment-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .comment-item {
+            display: flex;
+            gap: 10px;
+            padding: 12px 0;
+        }
+
+        .comment-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: #e3f2fd;
+            color: #1976d2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .comment-content {
+            flex: 1;
+        }
+
+        .comment-author {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .comment-text {
+            font-size: 0.95rem;
+            color: #555;
+            margin-top: 4px;
+        }
+
+        .comment-time {
+            font-size: 0.8rem;
+            color: #999;
+            margin-top: 4px;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+
+        .modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background-color: white;
+            border-radius: 12px;
+            padding: 24px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .image-viewer-content {
+            position: relative;
+            max-width: 90vw;
+            max-height: 90vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .image-viewer-close {
+            position: absolute;
+            top: -40px;
+            right: -40px;
+            background: none;
+            border: none;
+            font-size: 48px;
+            cursor: pointer;
+            color: white;
+            z-index: 10000;
+        }
+
+        .image-viewer-close:hover {
+            color: #ddd;
+        }
+
+        #viewerImage {
+            max-width: 90vw;
+            max-height: 90vh;
+            object-fit: contain;
+        }
+
+        .post-image {
+            cursor: pointer;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 20px;
+        }
+
+        .pagination button {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            background-color: white;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .pagination button.active {
+            background-color: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+
+        footer {
+            border-top: 1px solid #eaeaea;
+            padding: 2rem 0;
+            margin-top: 4rem;
+            text-align: center;
+            background-color: #fff;
+        }
+
+        .footer-copy {
+            color: #999;
+            font-size: 0.85rem;
+            margin: 0;
+        }
+
+        @media (max-width: 768px) {
+            .community-layout {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .post-actions {
+                flex-wrap: wrap;
+            }
+        }
+
+        /* 通知铃铛动画 */
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.1);
+                opacity: 0.8;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <nav>
+                <a href="/" class="logo">学习资源导航</a>
+                <ul class="nav-links">
+                    <li><a href="/">首页</a></li>
+                    <li><a href="/learning-domains">学习领域</a></li>
+                    <li><a href="/learning-path">学习路线</a></li>
+                    <li><a href="/community">社区</a></li>
+                    <li><a href="/vip" class="btn btn-primary">VIP充值</a></li>
+                </ul>
+                <div class="auth-buttons">
+                    <div class="user-menu" id="userMenu">
+                        <div class="notification-bell" id="notificationBell" style="display: none; cursor: pointer; position: absolute; top: -8px; left: -8px; z-index: 2;" onclick="window.location.href='/profile#notifications'">
+                            <span style="font-size: 1rem;">🔔</span>
+                            <span id="unreadBadge" style="position: absolute; top: -8px; right: -8px; background-color: #dc3545; color: white; border-radius: 50%; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: bold;">0</span>
+                        </div>
+                        <div class="user-avatar" id="userAvatar">?</div>
+                        <div class="user-dropdown">
+                            <div class="user-dropdown-content">
+                                <div class="user-info" id="userInfo">
+                                    <div class="user-name">游客</div>
+                                    <div class="user-email">未登录</div>
+                                </div>
+                                <ul class="dropdown-menu" id="dropdownMenu">
+                                    <li><a href="/login" id="loginBtn">登录</a></li>
+                                    <li><a href="/register">注册</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="community-layout">
+            <div class="main-content">
+                <div class="card post-form" id="postFormCard">
+                    <div class="card-body">
+                        <div id="loginTip" class="login-tip" style="display: none;">
+                            <span id="loginTipText">登录后可发布帖子</span>
+                            <a href="/login">立即登录</a>
+                        </div>
+                        <div id="postForm" style="display: none;">
+                            <input type="text" id="postTitle" placeholder="标题（选填）">
+                            <textarea id="postContent" placeholder="分享你的学习心得..."></textarea>
+                            <div id="selectedImages" style="display: flex; gap: 10px; margin: 10px 0; flex-wrap: wrap;"></div>
+                            <div class="post-form-actions">
+                                <input type="file" id="imageInput" accept="image/*" multiple style="display: none;">
+                                <button class="btn btn-outline" id="imageUploadBtn">添加图片</button>
+                                <button class="btn btn-primary" id="publishBtn">发布</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="filter-tabs">
+                    <button class="filter-tab active" data-filter="latest">最新</button>
+                    <button class="filter-tab" data-filter="hot">热门</button>
+                </div>
+
+                <div class="post-list" id="postList">
+                    <div class="loading">加载中...</div>
+                </div>
+
+                <div class="pagination" id="pagination"></div>
+            </div>
+
+            <div class="sidebar">
+                <div class="card announcement-card">
+                    <div class="card-header">
+                        <span>📌 置顶公告</span>
+                    </div>
+                    <div class="card-body" id="announcementList">
+                        <div class="loading">加载中...</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span>🏆 活跃用户</span>
+                        <small style="color: #999; font-size: 0.85em; margin-left: 10px;">本月排行榜</small>
+                    </div>
+                    <div class="card-body" id="activeUsersContainer">
+                        <div class="loading">加载中...</div>
+                    </div>
+                </div>
+
+                <div class="card" id="feedbackCard">
+                    <div class="card-header">
+                        <span>📬 管理员反馈</span>
+                        <small style="color: #999; font-size: 0.85em; margin-left: 10px;">您的声音我们倾听</small>
+                    </div>
+                    <div class="card-body">
+                        <div id="feedbackLoginTip" class="login-tip" style="display: none; padding: 15px;">
+                            <span>登录后可向管理员反馈</span>
+                            <a href="/login">立即登录</a>
+                        </div>
+                        <div id="feedbackForm" style="display: none;">
+                            <select id="feedbackType" style="width: 100%; padding: 8px 12px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 10px; font-size: 14px; outline: none;">
+                                <option value="OTHER">💬 一般反馈</option>
+                                <option value="BUG">🐛 Bug报告</option>
+                                <option value="FEATURE">💡 功能建议</option>
+                                <option value="RESOURCE">📚 资源请求</option>
+                            </select>
+                            <textarea id="feedbackContent" placeholder="请输入您的反馈内容..." style="width: 100%; min-height: 80px; padding: 12px; border: 1px solid #ddd; border-radius: 8px; resize: vertical; font-family: inherit; font-size: 14px; margin-bottom: 10px;"></textarea>
+                            <input type="text" id="feedbackContact" placeholder="联系方式（选填，方便我们回复您）" style="width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; margin-bottom: 10px;">
+                            <button class="btn btn-primary" id="submitFeedbackBtn" style="width: 100%;">提交反馈</button>
+                        </div>
+                        <div id="feedbackHistory" style="margin-top: 15px; max-height: 300px; overflow-y: auto;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="modal" id="postModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">帖子详情</h3>
+                <button class="modal-close" onclick="closePostModal()">&times;</button>
+            </div>
+            <div id="postModalBody"></div>
+        </div>
+    </div>
+
+    <!-- VIP升级提示弹窗 -->
+    <div class="modal" id="vipPromptModal">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <div class="modal-header">
+                <h3 class="modal-title">开通VIP会员</h3>
+                <button class="modal-close" onclick="closeVipPromptModal()">&times;</button>
+            </div>
+            <div style="padding: 20px 0;">
+                <div style="font-size: 48px; margin-bottom: 15px;">💎</div>
+                <p style="color: #666; margin-bottom: 15px; line-height: 1.6;" id="vipPromptMessage">
+                    VIP会员才可以使用评论功能<br>
+                    请先开通VIP会员
+                </p>
+                <div style="display: flex; gap: 10px; justify-content: center; margin-top: 20px;">
+                    <button class="btn btn-outline" onclick="closeVipPromptModal()">取消</button>
+                    <button class="btn btn-primary" onclick="goToVipPage()">立即开通VIP</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 图片查看器弹窗 -->
+    <div class="modal" id="imageViewerModal" style="z-index: 9999; background: rgba(0,0,0,0.9);">
+        <div class="image-viewer-content" id="imageViewerContent">
+            <button class="image-viewer-close" onclick="closeImageViewer()">&times;</button>
+            <img id="viewerImage" src="" alt="图片" />
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p class="footer-copy">&copy; 2026 学习资源导航系统</p>
+        </div>
+    </footer>
+
+    <script>
+        let user = JSON.parse(localStorage.getItem('user'));
+        let token = localStorage.getItem('token');
+        let currentPage = 1;
+        let currentFilter = 'latest';
+        let selectedImageUrls = [];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            updateUserMenu();
+            loadAnnouncements();
+            loadPosts();
+            loadActiveUsers();  // 加载活跃用户排行榜
+            initFeedbackModule();
+
+            document.getElementById('publishBtn').addEventListener('click', publishPost);
+            document.getElementById('imageUploadBtn').addEventListener('click', function() {
+                document.getElementById('imageInput').click();
+            });
+            document.getElementById('imageInput').addEventListener('change', handleImageSelect);
+
+            document.querySelectorAll('.filter-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    currentFilter = this.dataset.filter;
+                    currentPage = 1;
+                    loadPosts();
+                });
+            });
+        });
+
+        function handleImageSelect(event) {
+            const files = event.target.files;
+            const container = document.getElementById('selectedImages');
+            
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    const imgWrapper = document.createElement('div');
+                    imgWrapper.style.position = 'relative';
+                    imgWrapper.style.width = '100px';
+                    imgWrapper.style.height = '100px';
+                    
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.style.width = '100%';
+                    img.style.height = '100%';
+                    img.style.objectFit = 'cover';
+                    img.style.borderRadius = '8px';
+                    
+                    const removeBtn = document.createElement('button');
+                    removeBtn.innerHTML = '&times;';
+                    removeBtn.style.position = 'absolute';
+                    removeBtn.style.top = '-5px';
+                    removeBtn.style.right = '-5px';
+                    removeBtn.style.width = '24px';
+                    removeBtn.style.height = '24px';
+                    removeBtn.style.borderRadius = '50%';
+                    removeBtn.style.border = 'none';
+                    removeBtn.style.backgroundColor = '#ff4757';
+                    removeBtn.style.color = 'white';
+                    removeBtn.style.cursor = 'pointer';
+                    removeBtn.style.fontSize = '16px';
+                    removeBtn.style.lineHeight = '1';
+                    
+                    removeBtn.addEventListener('click', function() {
+                        container.removeChild(imgWrapper);
+                        const index = selectedImageUrls.indexOf(e.target.result);
+                        if (index > -1) {
+                            selectedImageUrls.splice(index, 1);
+                        }
+                    });
+                    
+                    imgWrapper.appendChild(img);
+                    imgWrapper.appendChild(removeBtn);
+                    container.appendChild(imgWrapper);
+                    selectedImageUrls.push(e.target.result);
+                };
+                
+                reader.readAsDataURL(file);
+            }
+            event.target.value = '';
+        }
+
+        function updateUserMenu() {
+            const userAvatar = document.getElementById('userAvatar');
+            const userInfo = document.getElementById('userInfo');
+            const dropdownMenu = document.getElementById('dropdownMenu');
+            const loginTip = document.getElementById('loginTip');
+            const postForm = document.getElementById('postForm');
+
+            if (user && token) {
+                if (user.avatar) {
+                    userAvatar.innerHTML = `<img src="${user.avatar + (user.avatar.includes('?') ? '&' : '?') + 't=' + Date.now()}" alt="${user.username || 'User'}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+                } else {
+                    userAvatar.textContent = user.username ? user.username.charAt(0).toUpperCase() : '?';
+                }
+                const isVip = user.vipExpireDate && new Date(user.vipExpireDate) > new Date();
+                userInfo.innerHTML = `
+                    <div class="user-name">${user.username}${isVip ? ' <span style="background:linear-gradient(135deg,#f5af19,#f12711);color:#fff;padding:2px 8px;border-radius:10px;font-size:12px;font-weight:bold;margin-left:6px;">VIP</span>' : ''}</div>
+                    <div class="user-email">${user.email}</div>
+                `;
+                dropdownMenu.innerHTML = `
+                    <li><a href="/profile">个人中心</a></li>
+                    <li><a href="#">我的学习</a></li>
+                    <li><a href="#">我的收藏</a></li>
+                    <div class="dropdown-divider"></div>
+                    <li><a href="#" id="logoutBtn">退出登录</a></li>
+                `;
+                document.getElementById('logoutBtn').addEventListener('click', function(e) {
+                    e.preventDefault();
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+                    user = null;
+                    token = null;
+                    updateUserMenu();
+                    alert('已退出登录');
+                });
+                loginTip.style.display = 'none';
+                postForm.style.display = 'block';
+                loadUnreadNotificationCount();
+            } else {
+                userAvatar.textContent = '?';
+                userInfo.innerHTML = `
+                    <div class="user-name">游客</div>
+                    <div class="user-email">未登录</div>
+                `;
+                dropdownMenu.innerHTML = `
+                    <li><a href="/login" id="loginBtn">登录</a></li>
+                    <li><a href="/register">注册</a></li>
+                `;
+                loginTip.style.display = 'block';
+                document.getElementById('loginTipText').textContent = '登录后可发布帖子';
+                postForm.style.display = 'none';
+            }
+        }
+
+        // 加载未读通知数量
+        function loadUnreadNotificationCount() {
+            const notificationBell = document.getElementById('notificationBell');
+            const unreadBadge = document.getElementById('unreadBadge');
+
+            fetch('/api/notifications/unread-count', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.code === 200 && data.data > 0) {
+                    notificationBell.style.display = 'flex';
+                    unreadBadge.textContent = data.data;
+                    // 添加动画效果引起注意
+                    unreadBadge.style.animation = 'pulse 2s infinite';
+                } else {
+                    notificationBell.style.display = 'none';
+                }
+            })
+            .catch(err => {
+                console.error('加载未读通知数量失败:', err);
+            });
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            user = null;
+            token = null;
+            updateUserMenu();
+            alert('已退出登录');
+        }
+
+        function loadAnnouncements() {
+            fetch('/api/posts/announcements/pinned')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.code === 200 && data.data && data.data.length > 0) {
+                        renderAnnouncements(data.data);
+                    } else {
+                        document.getElementById('announcementList').innerHTML = '<p style="text-align: center; color: #999;">暂无公告</p>';
+                    }
+                })
+                .catch(error => {
+                    console.error('加载公告失败:', error);
+                    document.getElementById('announcementList').innerHTML = '<p style="text-align: center; color: #999;">加载失败</p>';
+                });
+        }
+
+        function renderAnnouncements(announcements) {
+            const container = document.getElementById('announcementList');
+            container.innerHTML = announcements.map(a => `
+                <div class="announcement-item" onclick="showAnnouncementDetail(${a.id})">
+                    <div class="announcement-title">
+                        <span class="pin-icon">📌</span>
+                        ${escapeHtml(a.title)}
+                    </div>
+                    <div class="announcement-meta">
+                        ${getTypeText(a.type)} · ${formatTime(a.createdAt)}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function loadPosts() {
+            const postList = document.getElementById('postList');
+            postList.innerHTML = '<div class="loading">加载中...</div>';
+
+            fetch(`/api/posts?page=${currentPage}&size=10`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.code === 200 && data.data) {
+                        renderPosts(data.data.list || []);
+                        renderPagination(data.data.total, data.data.page, data.data.size);
+                    } else {
+                        postList.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📝</div><p>暂无帖子</p></div>';
+                    }
+                })
+                .catch(error => {
+                    console.error('加载帖子失败:', error);
+                    postList.innerHTML = '<div class="error">加载失败，请刷新重试</div>';
+                });
+        }
+
+        // 加载活跃用户排行榜
+        function loadActiveUsers() {
+            const container = document.getElementById('activeUsersContainer');
+
+            fetch('/api/active-users/ranking?limit=10')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.code === 200 && data.data && data.data.length > 0) {
+                        renderActiveUsers(data.data);
+                    } else {
+                        container.innerHTML = '<p style="color: #999; text-align: center; padding: 1rem;">本月暂无活跃用户</p>';
+                    }
+                })
+                .catch(error => {
+                    console.error('加载活跃用户失败:', error);
+                    container.innerHTML = '<p style="color: #dc3545; text-align: center; padding: 1rem;">加载失败</p>';
+                });
+        }
+
+        // 渲染活跃用户列表
+        function renderActiveUsers(users) {
+            const container = document.getElementById('activeUsersContainer');
+
+            const html = users.map((user, index) => {
+                const rankIcon = getRankIcon(index + 1);
+                const avatarHtml = user.avatar ?
+                    `<img src="${user.avatar}" alt="${escapeHtml(user.username)}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;" />` :
+                    `<div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 16px;">${(user.username || '?').charAt(0).toUpperCase()}</div>`;
+
+                return `
+                    <div class="active-user-item" style="display: flex; align-items: center; padding: 12px 8px; border-bottom: 1px solid #f0f0f0; ${index === users.length - 1 ? 'border-bottom: none;' : ''}">
+                        <div style="width: 30px; text-align: center; font-weight: bold; font-size: 18px; margin-right: 10px;">
+                            ${rankIcon}
+                        </div>
+                        <div style="margin-right: 12px;">
+                            ${avatarHtml}
+                        </div>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 500; color: #333; margin-bottom: 4px;">${escapeHtml(user.username || '匿名用户')}</div>
+                            <div style="font-size: 13px; color: #666;">
+                                📝 ${user.postCount || 0} 帖子 · 💬 ${user.commentCount || 0} 评论
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-weight: bold; color: #ff6b35; font-size: 16px;">${user.totalScore || 0}</div>
+                            <div style="font-size: 11px; color: #999;">积分</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = html;
+        }
+
+        // 获取排名图标（前3名显示奖牌）
+        function getRankIcon(rank) {
+            switch(rank) {
+                case 1: return '🥇';
+                case 2: return '🥈';
+                case 3: return '🥉';
+                default: return `<span style="color: #666;">${rank}</span>`;
+            }
+        }
+
+        // ==================== 管理员反馈模块 ====================
+
+        function initFeedbackModule() {
+            const feedbackLoginTip = document.getElementById('feedbackLoginTip');
+            const feedbackForm = document.getElementById('feedbackForm');
+
+            if (user && token) {
+                feedbackLoginTip.style.display = 'none';
+                feedbackForm.style.display = 'block';
+                loadFeedbackHistory();
+            } else {
+                feedbackLoginTip.style.display = 'block';
+                feedbackForm.style.display = 'none';
+            }
+
+            document.getElementById('submitFeedbackBtn').addEventListener('click', submitFeedback);
+        }
+
+        function submitFeedback() {
+            if (!token) {
+                alert('请先登录');
+                return;
+            }
+
+            const type = document.getElementById('feedbackType').value;
+            const content = document.getElementById('feedbackContent').value.trim();
+            const contact = document.getElementById('feedbackContact').value.trim();
+
+            if (!content) {
+                alert('请输入反馈内容');
+                return;
+            }
+
+            if (content.length > 2000) {
+                alert('反馈内容不能超过2000字');
+                return;
+            }
+
+            const btn = document.getElementById('submitFeedbackBtn');
+            btn.disabled = true;
+            btn.textContent = '提交中...';
+
+            fetch('/api/feedback', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ type, content, contact })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        try {
+                            const data = JSON.parse(text);
+                            throw new Error(data.message || '提交失败');
+                        } catch (e) {
+                            if (e.message && !e.message.includes('Unexpected')) throw e;
+                            throw new Error('服务器返回非JSON响应(HTTP ' + response.status + '): ' + text.substring(0, 200));
+                        }
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.code === 200) {
+                    document.getElementById('feedbackContent').value = '';
+                    document.getElementById('feedbackContact').value = '';
+                    alert('反馈提交成功，感谢您的意见！');
+                    loadFeedbackHistory();
+                } else {
+                    alert(data.message || '提交失败');
+                }
+            })
+            .catch(error => {
+                console.error('提交反馈失败:', error);
+                alert(error.message || '提交失败，请稍后重试');
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.textContent = '提交反馈';
+            });
+        }
+
+        function loadFeedbackHistory() {
+            if (!token) return;
+
+            const container = document.getElementById('feedbackHistory');
+
+            fetch('/api/feedback/my', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.code === 200 && data.data && data.data.length > 0) {
+                    renderFeedbackHistory(data.data);
+                } else {
+                    container.innerHTML = '';
+                }
+            })
+            .catch(error => {
+                console.error('加载反馈历史失败:', error);
+                container.innerHTML = '';
+            });
+        }
+
+        function renderFeedbackHistory(feedbacks) {
+            const container = document.getElementById('feedbackHistory');
+
+            const typeIcons = { 'BUG': '🐛', 'FEATURE': '💡', 'RESOURCE': '📚', 'OTHER': '💬' };
+            const statusLabels = {
+                'PENDING': '<span style="color: #e6a23c;">待处理</span>',
+                'PROCESSING': '<span style="color: #409eff;">处理中</span>',
+                'RESOLVED': '<span style="color: #67c23a;">已回复</span>',
+                'CLOSED': '<span style="color: #909399;">已关闭</span>'
+            };
+
+            const html = `
+                <div style="font-size: 13px; color: #999; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid #f0f0f0;">我的反馈记录</div>
+                ${feedbacks.slice(0, 5).map(fb => `
+                    <div style="padding: 10px 0; border-bottom: 1px solid #f5f5f5; ${feedbacks.indexOf(fb) === Math.min(feedbacks.length, 5) - 1 ? 'border-bottom: none;' : ''}">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                            <span style="font-size: 13px;">${typeIcons[fb.type] || '💬'} ${escapeHtml(fb.content.substring(0, 30))}${fb.content.length > 30 ? '...' : ''}</span>
+                            ${statusLabels[fb.status] || '<span style="color: #999;">未知</span>'}
+                        </div>
+                        ${fb.reply ? `<div style="font-size: 12px; color: #67c23a; background: #f0f9eb; padding: 6px 8px; border-radius: 4px; margin-top: 4px;">管理员回复：${escapeHtml(fb.reply)}</div>` : ''}
+                        <div style="font-size: 11px; color: #bbb; margin-top: 4px;">${formatTime(fb.createdAt)}</div>
+                    </div>
+                `).join('')}
+            `;
+
+            container.innerHTML = html;
+        }
+
+        function renderPosts(posts) {
+            const postList = document.getElementById('postList');
+
+            if (!posts || posts.length === 0) {
+                postList.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📝</div><p>暂无帖子，成为第一个发帖的人吧！</p></div>';
+                return;
+            }
+
+            postList.innerHTML = posts.map(post => {
+                let imagesHtml = '';
+                if (post.images) {
+                    const imageUrls = post.images.split('|||').filter(img => img.trim());
+                    if (imageUrls.length > 0) {
+                        imagesHtml = '<div class="post-images">';
+                        for (let imgUrl of imageUrls) {
+                            imagesHtml += `<img src="${imgUrl}" class="post-image" onclick="event.stopPropagation();openImageViewer('${imgUrl}');" />`;
+                        }
+                        imagesHtml += '</div>';
+                    }
+                }
+                return `
+                <div class="post-card" onclick="showPostDetail(${post.id})">
+                    <div class="post-header">
+                        <div class="post-avatar">${post.username ? post.username.charAt(0).toUpperCase() : '?'}</div>
+                        <div class="post-author-info">
+                            <div class="post-author-name">
+                                ${escapeHtml(post.username || '匿名用户')}
+                                ${post.isPinned == 1 ? '<span class="pinned-badge">置顶</span>' : ''}
+                            </div>
+                            <div class="post-time">${formatTime(post.createdAt)}</div>
+                        </div>
+                    </div>
+                    ${post.title ? `<div class="post-title">${escapeHtml(post.title)}</div>` : ''}
+                    <div class="post-content">${escapeHtml(post.content || '')}</div>
+                    ${imagesHtml}
+                    <div class="post-actions" onclick="event.stopPropagation()">
+                        <div class="post-action like-btn ${post.hasLiked ? 'liked' : ''}" onclick="likePost(${post.id})">
+                            <span class="post-action-icon">❤️</span>
+                            <span>${post.likesCount || 0}</span>
+                        </div>
+                        <div class="post-action" onclick="showPostComments(${post.id})">
+                            <span class="post-action-icon">💬</span>
+                            <span>${post.commentsCount || 0}</span>
+                        </div>
+                        <div class="post-action" onclick="sharePost(${post.id})">
+                            <span class="post-action-icon">📤</span>
+                            <span>分享</span>
+                        </div>
+                    </div>
+                </div>
+            `}).join('');
+        }
+
+        function renderPagination(total, page, size) {
+            const pagination = document.getElementById('pagination');
+            const totalPages = Math.ceil(total / size);
+
+            if (totalPages <= 1) {
+                pagination.innerHTML = '';
+                return;
+            }
+
+            let html = '';
+            for (let i = 1; i <= totalPages; i++) {
+                html += `<button class="${i === page ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+            }
+            pagination.innerHTML = html;
+        }
+
+        function goToPage(page) {
+            currentPage = page;
+            loadPosts();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function publishPost() {
+            if (!token) {
+                alert('请先登录');
+                window.location.href = '/login';
+                return;
+            }
+
+            const title = document.getElementById('postTitle').value.trim();
+            const content = document.getElementById('postContent').value.trim();
+
+            if (!content) {
+                alert('请输入内容');
+                return;
+            }
+
+            const postData = { 
+                title, 
+                content,
+                images: selectedImageUrls.join('|||') 
+            };
+
+            fetch('/api/posts', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(postData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.code === 200) {
+                    alert('发布成功');
+                    document.getElementById('postTitle').value = '';
+                    document.getElementById('postContent').value = '';
+                    document.getElementById('selectedImages').innerHTML = '';
+                    selectedImageUrls = [];
+                    loadPosts();
+                } else {
+                    alert(data.message || '发布失败');
+                }
+            })
+            .catch(error => {
+                console.error('发布失败:', error);
+                alert('发布失败，请稍后重试');
+            });
+        }
+
+        function likePost(postId) {
+            if (!token) {
+                alert('请先登录');
+                return;
+            }
+
+            fetch(`/api/posts/${postId}/like`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.code === 200) {
+                    loadPosts();
+                } else {
+                    alert(data.message || '操作失败');
+                }
+            })
+            .catch(error => {
+                console.error('点赞失败:', error);
+            });
+        }
+
+        function showPostDetail(postId) {
+            fetch(`/api/posts/${postId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.code === 200) {
+                        displayPostModal(data.data);
+                    }
+                });
+        }
+
+        function showAnnouncementDetail(announcementId) {
+            fetch(`/api/announcements/${announcementId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.code === 200) {
+                        displayAnnouncementModal(data.data);
+                    }
+                });
+        }
+
+        function displayPostModal(post) {
+            const modal = document.getElementById('postModal');
+            const body = document.getElementById('postModalBody');
+
+            let imagesHtml = '';
+            if (post.images) {
+                const imageUrls = post.images.split('|||').filter(img => img.trim());
+                if (imageUrls.length > 0) {
+                    imagesHtml = '<div class="post-images">';
+                    for (let imgUrl of imageUrls) {
+                        imagesHtml += `<img src="${imgUrl}" class="post-image" style="max-height: 300px;" onclick="openImageViewer('${imgUrl}');" />`;
+                    }
+                    imagesHtml += '</div>';
+                }
+            }
+
+            body.innerHTML = `
+                <div class="post-header">
+                    <div class="post-avatar">${post.username ? post.username.charAt(0).toUpperCase() : '?'}</div>
+                    <div class="post-author-info">
+                        <div class="post-author-name">${escapeHtml(post.username || '匿名用户')}</div>
+                        <div class="post-time">${formatTime(post.createdAt)}</div>
+                    </div>
+                </div>
+                ${post.title ? `<div class="post-title" style="margin-top: 15px;">${escapeHtml(post.title)}</div>` : ''}
+                <div class="post-content" style="margin-top: 15px;">${escapeHtml(post.content || '')}</div>
+                ${imagesHtml}
+                <div class="post-actions">
+                    <div class="post-action like-btn" onclick="likePost(${post.id}); closePostModal();">
+                        <span class="post-action-icon">❤️</span>
+                        <span>${post.likesCount || 0}</span>
+                    </div>
+                    <div class="post-action">
+                        <span class="post-action-icon">💬</span>
+                        <span>${post.commentsCount || 0}</span>
+                    </div>
+                </div>
+                <div class="comment-section">
+                    <h4 style="margin-bottom: 15px;">评论</h4>
+                    <div class="comment-input-wrapper">
+                        <input type="text" class="comment-input" placeholder="写下你的评论..." id="commentInput">
+                        <button class="btn btn-primary" onclick="submitComment(${post.id})">发送</button>
+                    </div>
+                    <div class="comment-list" id="commentList">
+                        <p style="color: #999; text-align: center;">加载评论...</p>
+                    </div>
+                </div>
+            `;
+
+            modal.classList.add('show');
+            loadComments('post', post.id);
+        }
+
+        function displayAnnouncementModal(announcement) {
+            const modal = document.getElementById('postModal');
+            const body = document.getElementById('postModalBody');
+
+            body.innerHTML = `
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; margin: -24px -24px 24px -24px; border-radius: 12px 12px 0 0;">
+                    <div style="font-size: 0.9rem; opacity: 0.8;">${getTypeText(announcement.type)}</div>
+                    <h2 style="margin-top: 10px;">${escapeHtml(announcement.title)}</h2>
+                    <div style="font-size: 0.85rem; opacity: 0.8; margin-top: 10px;">${formatTime(announcement.createdAt)}</div>
+                </div>
+                <div class="post-content">${escapeHtml(announcement.content || '')}</div>
+                <div class="post-actions">
+                    <div class="post-action" onclick="likeAnnouncement(${announcement.id})">
+                        <span class="post-action-icon">❤️</span>
+                        <span>${announcement.likesCount || 0}</span>
+                    </div>
+                </div>
+                <div class="comment-section">
+                    <h4 style="margin-bottom: 15px;">评论</h4>
+                    <div class="comment-input-wrapper">
+                        <input type="text" class="comment-input" placeholder="写下你的评论..." id="commentInput">
+                        <button class="btn btn-primary" onclick="submitAnnouncementComment(${announcement.id})">发送</button>
+                    </div>
+                    <div class="comment-list" id="commentList">
+                        <p style="color: #999; text-align: center;">加载评论...</p>
+                    </div>
+                </div>
+            `;
+
+            modal.classList.add('show');
+            loadCommentsForAnnouncement(announcement.id);
+        }
+
+        function closePostModal() {
+            document.getElementById('postModal').classList.remove('show');
+        }
+
+        function showVipPromptModal() {
+            document.getElementById('vipPromptModal').classList.add('show');
+        }
+
+        function closeVipPromptModal() {
+            document.getElementById('vipPromptModal').classList.remove('show');
+        }
+
+        function goToVipPage() {
+            closeVipPromptModal();
+            window.location.href = '/vip';
+        }
+
+        function openImageViewer(imgUrl) {
+            document.getElementById('viewerImage').src = imgUrl;
+            document.getElementById('imageViewerModal').classList.add('show');
+        }
+
+        function closeImageViewer() {
+            document.getElementById('imageViewerModal').classList.remove('show');
+        }
+
+        function loadComments(targetType, targetId) {
+            const commentList = document.getElementById('commentList');
+            fetch(`/api/comments/${targetType}/${targetId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.code === 200 && data.data && data.data.length > 0) {
+                        commentList.innerHTML = data.data.map(comment => `
+                            <div class="comment-item">
+                                <div class="comment-avatar">${comment.username ? comment.username.charAt(0).toUpperCase() : '?'}</div>
+                                <div class="comment-content">
+                                    <div class="comment-author">${escapeHtml(comment.username || '匿名')} ${comment.isTop == 1 ? '置顶' : ''}</div>
+                                    <div class="comment-text">${escapeHtml(comment.content)}</div>
+                                    <div class="comment-time">${formatTime(comment.createdAt)}</div>
+                                </div>
+                            </div>
+                        `).join('');
+                    } else {
+                        commentList.innerHTML = '<p style="color: #999; text-align: center;">暂无评论</p>';
+                    }
+                });
+        }
+
+        function loadCommentsForAnnouncement(announcementId) {
+            loadComments('announcement', announcementId);
+        }
+
+        function submitComment(postId) {
+            if (!token) {
+                alert('请先登录');
+                return;
+            }
+
+            const content = document.getElementById('commentInput').value.trim();
+            if (!content) {
+                alert('请输入评论内容');
+                return;
+            }
+
+            fetch('/api/comments', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    targetType: 'post',
+                    targetId: postId,
+                    content: content
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.code === 200) {
+                    document.getElementById('commentInput').value = '';
+                    loadComments('post', postId);
+                } else if (data.message && data.message.includes('VIP')) {
+                    showVipPromptModal();
+                } else {
+                    alert(data.message || '评论失败');
+                }
+            });
+        }
+
+        function submitAnnouncementComment(announcementId) {
+            if (!token) {
+                alert('请先登录');
+                return;
+            }
+
+            const content = document.getElementById('commentInput').value.trim();
+            if (!content) {
+                alert('请输入评论内容');
+                return;
+            }
+
+            fetch('/api/comments', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    targetType: 'announcement',
+                    targetId: announcementId,
+                    content: content
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.code === 200) {
+                    document.getElementById('commentInput').value = '';
+                    loadComments('announcement', announcementId);
+                } else if (data.message && data.message.includes('VIP')) {
+                    showVipPromptModal();
+                } else {
+                    alert(data.message || '评论失败');
+                }
+            });
+        }
+
+        function showPostComments(postId) {
+            showPostDetail(postId);
+        }
+
+        function likeAnnouncement(announcementId) {
+            if (!token) {
+                alert('请先登录');
+                return;
+            }
+
+            fetch(`/api/announcements/${announcementId}/like`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.code === 200) {
+                    loadAnnouncements();
+                }
+            });
+        }
+
+        function sharePost(postId) {
+            const url = window.location.origin + '/community?post=' + postId;
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(url);
+                alert('链接已复制到剪贴板');
+            }
+        }
+
+        function getTypeText(type) {
+            const types = {
+                'announcement': '课程预告',
+                'feature': '功能更新',
+                'notice': '系统通知'
+            };
+            return types[type] || type;
+        }
+
+        function formatTime(timeStr) {
+            if (!timeStr) return '';
+            const date = new Date(timeStr);
+            const now = new Date();
+            const diff = now - date;
+
+            if (diff < 60000) return '刚刚';
+            if (diff < 3600000) return Math.floor(diff / 60000) + '分钟前';
+            if (diff < 86400000) return Math.floor(diff / 3600000) + '小时前';
+            if (diff < 604800000) return Math.floor(diff / 86400000) + '天前';
+
+            return date.toLocaleDateString('zh-CN');
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        document.getElementById('postModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closePostModal();
+            }
+        });
+
+        document.getElementById('imageViewerModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeImageViewer();
+            }
+        });
+    </script>
+</body>
+</html>

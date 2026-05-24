@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>学习领域 - 学习资源导航系统</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; background-color: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+        header { background-color: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 1000; }
+        nav { display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; }
+        .logo { font-size: 1.5rem; font-weight: bold; color: #007bff; text-decoration: none; line-height: 1.5; }
+        .nav-links { display: flex; list-style: none; gap: 2rem; margin: 0; padding: 0; align-items: center; }
+        .nav-links a { text-decoration: none; color: #333; font-weight: 500; transition: color 0.3s; }
+        .nav-links a:hover, .nav-links a.active { color: #007bff; }
+        .nav-links .dropdown { position: relative; }
+        .nav-links .dropdown-toggle { cursor: pointer; display: flex; align-items: center; gap: 4px; }
+        .nav-links .dropdown-toggle::after { content: '\25BC'; font-size: 0.6em; transition: transform 0.3s; }
+        .nav-links .dropdown:hover .dropdown-toggle::after { transform: rotate(180deg); }
+        .nav-links .dropdown-menu { display: none; position: absolute; top: 100%; left: -1rem; background: #fff; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); min-width: 180px; padding: 0.5rem 0; z-index: 1001; }
+        .nav-links .dropdown:hover .dropdown-menu { display: block; }
+        .nav-links .dropdown-menu a { display: block; padding: 0.6rem 1.2rem; color: #333; white-space: nowrap; border-radius: 4px; margin: 0 0.3rem; }
+        .nav-links .dropdown-menu a:hover { background: #f0f7ff; color: #007bff; }
+        .hamburger { display: none; cursor: pointer; flex-direction: column; gap: 5px; }
+        .hamburger span { display: block; width: 25px; height: 3px; background-color: #333; transition: all 0.3s; }
+        .btn { display: inline-flex; align-items: center; padding: 0.5rem 1.5rem; border-radius: 6px; text-decoration: none; font-weight: 500; transition: all 0.3s; border: none; cursor: pointer; line-height: 1.5; }
+        .btn-primary { background-color: #007bff; color: #fff; }
+        .btn-primary:hover { background-color: #0056b3; }
+
+        .btn-vip {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .btn-vip::before {
+            content: '💎';
+            font-size: 1rem;
+        }
+
+        .btn-vip:hover {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+        }
+
+        .btn-vip:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 6px rgba(245, 158, 11, 0.3);
+        }
+
+        /* Breadcrumb */
+        .breadcrumb { padding: 1rem 0; color: #666; font-size: 0.9rem; }
+        .breadcrumb a { color: #007bff; text-decoration: none; }
+        .breadcrumb a:hover { text-decoration: underline; }
+        .breadcrumb span { margin: 0 0.5rem; color: #ccc; }
+
+        /* Page Header */
+        .page-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; padding: 3rem 0; text-align: center; }
+        .page-header h1 { font-size: 2.2rem; margin-bottom: 0.5rem; }
+        .page-header p { font-size: 1.1rem; opacity: 0.9; }
+
+        /* Domains Grid */
+        .domains-section { padding: 3rem 0; }
+        .domains-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 2rem; }
+        .domain-card { background: #fff; border-radius: 12px; padding: 2rem; text-align: center; transition: all 0.3s; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.06); text-decoration: none; color: #333; display: block; }
+        .domain-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
+        .domain-icon { font-size: 3rem; margin-bottom: 1rem; }
+        .domain-name { font-size: 1.3rem; font-weight: 600; margin-bottom: 0.5rem; }
+        .domain-description { color: #666; font-size: 0.9rem; margin-bottom: 1rem; }
+        .domain-count { color: #007bff; font-size: 0.85rem; font-weight: 500; }
+        .domain-arrow { display: inline-block; margin-top: 0.5rem; color: #007bff; font-size: 0.8rem; }
+
+        /* Loading */
+        .loading { text-align: center; padding: 3rem; color: #666; }
+        .spinner { display: inline-block; width: 40px; height: 40px; border: 3px solid #f3f3f3; border-top: 3px solid #007bff; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Error */
+        .error-msg { text-align: center; padding: 2rem; color: #e74c3c; }
+
+        /* Footer */
+        footer {
+            border-top: 1px solid #eaeaea;
+            padding: 2rem 0;
+            margin-top: 4rem;
+            text-align: center;
+            background-color: #fff;
+        }
+
+        .footer-copy {
+            color: #999;
+            font-size: 0.85rem;
+            margin: 0;
+        }
+        footer p { opacity: 0.7; font-size: 0.9rem; }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            .hamburger { display: flex; }
+            .nav-links { display: none; position: absolute; top: 100%; left: 0; right: 0; background: #fff; flex-direction: column; padding: 1rem; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+            .nav-links.active { display: flex; }
+            .domains-grid { grid-template-columns: 1fr; }
+            .page-header h1 { font-size: 1.6rem; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <nav>
+                <a href="/" class="logo">学习资源导航</a>
+                <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
+                <ul class="nav-links" id="navLinks">
+                    <li><a href="/">首页</a></li>
+                    <li class="dropdown">
+                        <a href="/learning-domains" class="dropdown-toggle active">学习领域</a>
+                        <div class="dropdown-menu" id="domainDropdown">
+                            <!-- 动态填充 -->
+                        </div>
+                    </li>
+                    <li><a href="/learning-path">学习路线</a></li>
+                    <li><a href="/vip" class="btn btn-primary">VIP充值</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <div class="breadcrumb">
+            <div class="container">
+                <a href="/">首页</a> <span>&gt;</span> <strong>学习领域</strong>
+            </div>
+        </div>
+
+        <div class="page-header">
+            <div class="container">
+                <h1>学习领域</h1>
+                <p>选择你感兴趣的学习领域，开启系统化的学习之旅</p>
+            </div>
+        </div>
+
+        <section class="domains-section">
+            <div class="container">
+                <div id="loadingArea" class="loading">
+                    <div class="spinner"></div>
+                    <p style="margin-top: 1rem;">加载中...</p>
+                </div>
+                <div id="errorArea" class="error-msg" style="display:none;"></div>
+                <div id="domainsGrid" class="domains-grid" style="display:none;"></div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p class="footer-copy">&copy; 2026 学习资源导航系统</p>
+        </div>
+    </footer>
+
+    <script>
+        // Hamburger menu
+        document.getElementById('hamburger').addEventListener('click', function() {
+            document.getElementById('navLinks').classList.toggle('active');
+        });
+
+        // Load domains and dropdown
+        async function loadData() {
+            try {
+                const [catRes, subRes] = await Promise.all([
+                    fetch('/api/categories/active'),
+                    fetch('/api/subcategories/all')
+                ]);
+                const catData = await catRes.json();
+                const subData = await subRes.json();
+
+                if (catData.code !== 200) throw new Error(catData.message);
+                if (subData.code !== 200) throw new Error(subData.message);
+
+                const categories = catData.data || [];
+                const subcategories = subData.data || [];
+
+                // Build dropdown menu
+                const dropdown = document.getElementById('domainDropdown');
+                categories.forEach(cat => {
+                    const catSubs = subcategories.filter(s => s.categoryId === cat.id);
+                    if (catSubs.length > 0) {
+                        const group = document.createElement('div');
+                        group.style.cssText = 'padding: 0.3rem 1.2rem 0.1rem; font-size: 0.75rem; color: #999; font-weight: 600;';
+                        group.textContent = cat.name;
+                        dropdown.appendChild(group);
+                    }
+                    catSubs.forEach(sub => {
+                        const a = document.createElement('a');
+                        a.href = '/learning-subdomain?id=' + sub.id;
+                        a.textContent = sub.name;
+                        dropdown.appendChild(a);
+                    });
+                });
+
+                // Build domain cards
+                const grid = document.getElementById('domainsGrid');
+                categories.forEach(cat => {
+                    const catSubs = subcategories.filter(s => s.categoryId === cat.id && s.status === 1);
+                    const card = document.createElement('a');
+                    card.href = '/learning-subdomain?categoryId=' + cat.id;
+                    card.className = 'domain-card';
+                    card.innerHTML = `
+                        <div class="domain-icon">${cat.icon || '📚'}</div>
+                        <div class="domain-name">${cat.name}</div>
+                        <div class="domain-description">${cat.description || ''}</div>
+                        <div class="domain-count">${catSubs.length} 个学习方向</div>
+                        <div class="domain-arrow">查看详情 →</div>
+                    `;
+                    grid.appendChild(card);
+                });
+
+                document.getElementById('loadingArea').style.display = 'none';
+                document.getElementById('domainsGrid').style.display = 'grid';
+            } catch (err) {
+                document.getElementById('loadingArea').style.display = 'none';
+                document.getElementById('errorArea').style.display = 'block';
+                document.getElementById('errorArea').textContent = '加载失败: ' + err.message;
+            }
+        }
+
+        loadData();
+    </script>
+</body>
+</html>

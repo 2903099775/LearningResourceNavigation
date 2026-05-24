@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.learning.mapper.LearningPathMapper">
+
+    <resultMap id="BaseResultMap" type="com.learning.entity.LearningPath">
+        <id column="id" property="id"/>
+        <result column="title" property="title"/>
+        <result column="category_id" property="categoryId"/>
+        <result column="subcategory_id" property="subcategoryId"/>
+        <result column="description" property="description"/>
+        <result column="cover_image" property="coverImage"/>
+        <result column="difficulty" property="difficulty"/>
+        <result column="duration_weeks" property="durationWeeks"/>
+        <result column="is_vip_only" property="isVipOnly"/>
+        <result column="status" property="status"/>
+        <result column="sort_order" property="sortOrder"/>
+        <result column="created_by" property="createdBy"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+        <association property="category" javaType="com.learning.entity.LearningCategory">
+            <id column="category_id" property="id"/>
+            <result column="category_name" property="name"/>
+            <result column="category_description" property="description"/>
+            <result column="category_icon" property="icon"/>
+            <result column="category_sort_order" property="sortOrder"/>
+            <result column="category_status" property="status"/>
+        </association>
+        <association property="subcategory" javaType="com.learning.entity.LearningSubcategory">
+            <id column="subcategory_id" property="id"/>
+            <result column="subcategory_name" property="name"/>
+            <result column="subcategory_description" property="description"/>
+            <result column="subcategory_icon" property="icon"/>
+            <result column="subcategory_sort_order" property="sortOrder"/>
+        </association>
+    </resultMap>
+
+    <sql id="baseSelectColumns">
+        lp.id, lp.title, lp.category_id, lp.subcategory_id, lp.description, lp.cover_image, lp.difficulty, lp.duration_weeks, lp.is_vip_only, lp.status, lp.sort_order, lp.created_by, lp.created_at, lp.updated_at,
+        lc.name as category_name, lc.description as category_description, lc.icon as category_icon, lc.sort_order as category_sort_order, lc.status as category_status,
+        lsc.name as subcategory_name, lsc.description as subcategory_description, lsc.icon as subcategory_icon, lsc.sort_order as subcategory_sort_order
+    </sql>
+
+    <sql id="baseJoins">
+        FROM learning_paths lp
+        LEFT JOIN learning_categories lc ON lp.category_id = lc.id
+        LEFT JOIN learning_subcategories lsc ON lp.subcategory_id = lsc.id
+    </sql>
+
+    <select id="findAll" resultMap="BaseResultMap">
+        SELECT <include refid="baseSelectColumns"/>
+        <include refid="baseJoins"/>
+        WHERE lp.status = 'PUBLISHED'
+        ORDER BY lp.sort_order ASC, lp.created_at DESC
+    </select>
+
+    <select id="findById" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT <include refid="baseSelectColumns"/>
+        <include refid="baseJoins"/>
+        WHERE lp.id = #{id}
+    </select>
+
+    <insert id="insert" parameterType="com.learning.entity.LearningPath" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO learning_paths (title, category_id, subcategory_id, description, cover_image, difficulty, duration_weeks, is_vip_only, status, sort_order, created_by)
+        VALUES (#{title}, #{categoryId}, #{subcategoryId}, #{description}, #{coverImage}, #{difficulty}, #{durationWeeks}, #{isVipOnly}, #{status}, #{sortOrder}, #{createdBy})
+    </insert>
+
+    <update id="update" parameterType="com.learning.entity.LearningPath">
+        UPDATE learning_paths
+        SET title = #{title},
+            category_id = #{categoryId},
+            subcategory_id = #{subcategoryId},
+            description = #{description},
+            cover_image = #{coverImage},
+            difficulty = #{difficulty},
+            duration_weeks = #{durationWeeks},
+            is_vip_only = #{isVipOnly},
+            status = #{status},
+            sort_order = #{sortOrder}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.Long">
+        DELETE FROM learning_paths WHERE id = #{id}
+    </delete>
+
+    <select id="findByCategory" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT <include refid="baseSelectColumns"/>
+        <include refid="baseJoins"/>
+        WHERE lp.category_id = #{categoryId} AND lp.status = 'PUBLISHED' ORDER BY lp.sort_order ASC
+    </select>
+
+    <select id="findBySubcategory" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT <include refid="baseSelectColumns"/>
+        <include refid="baseJoins"/>
+        WHERE lp.subcategory_id = #{subcategoryId} AND lp.status = 'PUBLISHED' ORDER BY lp.sort_order ASC
+    </select>
+
+    <select id="findByStatus" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT <include refid="baseSelectColumns"/>
+        <include refid="baseJoins"/>
+        WHERE lp.status = #{status} ORDER BY lp.sort_order ASC
+    </select>
+
+    <select id="findByCreatedBy" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT <include refid="baseSelectColumns"/>
+        <include refid="baseJoins"/>
+        WHERE lp.created_by = #{createdBy} ORDER BY lp.created_at DESC
+    </select>
+    
+    <select id="selectList" resultMap="BaseResultMap">
+        SELECT <include refid="baseSelectColumns"/>
+        <include refid="baseJoins"/>
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND lp.title LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+            <if test="status != null and status != ''">
+                AND lp.status = #{status}
+            </if>
+            <if test="category != null and category != ''">
+                AND lp.category_id = #{category}
+            </if>
+        </where>
+        ORDER BY lp.created_at DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+    
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM learning_paths lp
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND lp.title LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+            <if test="status != null and status != ''">
+                AND lp.status = #{status}
+            </if>
+            <if test="category != null">
+                AND lp.category_id = #{category}
+            </if>
+        </where>
+    </select>
+    
+    <select id="selectById" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT <include refid="baseSelectColumns"/>
+        <include refid="baseJoins"/>
+        WHERE lp.id = #{id}
+    </select>
+
+    <select id="searchByKeyword" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT <include refid="baseSelectColumns"/>
+        <include refid="baseJoins"/>
+        WHERE lp.status = 'PUBLISHED'
+        AND (lp.title LIKE CONCAT('%', #{keyword}, '%') OR lp.description LIKE CONCAT('%', #{keyword}, '%'))
+        ORDER BY lp.sort_order ASC, lp.created_at DESC
+    </select>
+
+    <resultMap id="HotPathResultMap" type="com.learning.entity.LearningPath">
+        <id column="id" property="id"/>
+        <result column="title" property="title"/>
+        <result column="category_id" property="categoryId"/>
+        <result column="subcategory_id" property="subcategoryId"/>
+        <result column="description" property="description"/>
+        <result column="cover_image" property="coverImage"/>
+        <result column="difficulty" property="difficulty"/>
+        <result column="duration_weeks" property="durationWeeks"/>
+        <result column="is_vip_only" property="isVipOnly"/>
+        <result column="status" property="status"/>
+        <result column="sort_order" property="sortOrder"/>
+        <result column="created_by" property="createdBy"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+        <result column="total_view_count" property="totalViewCount"/>
+        <association property="category" javaType="com.learning.entity.LearningCategory">
+            <id column="category_id" property="id"/>
+            <result column="category_name" property="name"/>
+            <result column="category_description" property="description"/>
+            <result column="category_icon" property="icon"/>
+            <result column="category_sort_order" property="sortOrder"/>
+            <result column="category_status" property="status"/>
+        </association>
+        <association property="subcategory" javaType="com.learning.entity.LearningSubcategory">
+            <id column="subcategory_id" property="id"/>
+            <result column="subcategory_name" property="name"/>
+            <result column="subcategory_description" property="description"/>
+            <result column="subcategory_icon" property="icon"/>
+        </association>
+    </resultMap>
+
+    <select id="findHotPaths" resultMap="HotPathResultMap">
+        SELECT <include refid="baseSelectColumns"/>,
+               COALESCE(SUM(lu.view_count), 0) as total_view_count
+        <include refid="baseJoins"/>
+        LEFT JOIN path_stages ps ON lp.id = ps.path_id
+        LEFT JOIN learning_units lu ON ps.id = lu.stage_id
+        WHERE lp.status = 'PUBLISHED'
+        GROUP BY lp.id, lp.title, lp.category_id, lp.subcategory_id, lp.description, lp.cover_image, lp.difficulty, lp.duration_weeks, lp.is_vip_only, lp.status, lp.sort_order, lp.created_by, lp.created_at, lp.updated_at,
+                 lc.name, lc.description, lc.icon, lc.sort_order, lc.status,
+                 lsc.name, lsc.description, lsc.icon, lsc.sort_order
+        ORDER BY total_view_count DESC
+        LIMIT #{limit}
+    </select>
+
+    <select id="findAllWithDetails" resultType="java.util.Map">
+        SELECT lp.id, lp.title, lp.difficulty, lp.is_vip_only, lp.status, lp.created_at,
+               lc.name as category_name,
+               lsc.name as subcategory_name
+        FROM learning_paths lp
+        LEFT JOIN learning_categories lc ON lp.category_id = lc.id
+        LEFT JOIN learning_subcategories lsc ON lp.subcategory_id = lsc.id
+        ORDER BY lp.created_at DESC
+    </select>
+
+    <select id="countPublished" resultType="int">
+        SELECT COUNT(*) FROM learning_paths WHERE status = 'PUBLISHED'
+    </select>
+
+</mapper>

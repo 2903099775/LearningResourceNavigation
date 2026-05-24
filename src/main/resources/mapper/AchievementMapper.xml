@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.learning.mapper.AchievementMapper">
+
+    <resultMap id="AchievementResultMap" type="com.learning.entity.Achievement">
+        <id column="id" property="id"/>
+        <result column="code" property="code"/>
+        <result column="name" property="name"/>
+        <result column="description" property="description"/>
+        <result column="icon" property="icon"/>
+        <result column="points" property="points"/>
+        <result column="condition_type" property="conditionType"/>
+        <result column="condition_value" property="conditionValue"/>
+        <result column="created_at" property="createdAt"/>
+    </resultMap>
+
+    <resultMap id="UserAchievementResultMap" type="com.learning.entity.UserAchievement">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="achievement_id" property="achievementId"/>
+        <result column="unlocked_at" property="unlockedAt"/>
+        <association property="achievement" javaType="com.learning.entity.Achievement">
+            <id column="a_id" property="id"/>
+            <result column="a_code" property="code"/>
+            <result column="a_name" property="name"/>
+            <result column="a_description" property="description"/>
+            <result column="a_icon" property="icon"/>
+            <result column="a_points" property="points"/>
+            <result column="a_condition_type" property="conditionType"/>
+            <result column="a_condition_value" property="conditionValue"/>
+            <result column="a_created_at" property="createdAt"/>
+        </association>
+    </resultMap>
+
+    <select id="findAll" resultMap="AchievementResultMap">
+        SELECT * FROM achievements ORDER BY points ASC
+    </select>
+
+    <select id="findById" resultMap="AchievementResultMap">
+        SELECT * FROM achievements WHERE id = #{id}
+    </select>
+
+    <select id="findByCode" resultMap="AchievementResultMap">
+        SELECT * FROM achievements WHERE code = #{code}
+    </select>
+
+    <select id="findByUserId" resultMap="UserAchievementResultMap">
+        SELECT ua.id, ua.user_id, ua.achievement_id, ua.unlocked_at,
+               a.id as a_id, a.code as a_code, a.name as a_name, a.description as a_description,
+               a.icon as a_icon, a.points as a_points, a.condition_type as a_condition_type,
+               a.condition_value as a_condition_value, a.created_at as a_created_at
+        FROM user_achievements ua
+        JOIN achievements a ON ua.achievement_id = a.id
+        WHERE ua.user_id = #{userId}
+        ORDER BY ua.unlocked_at DESC
+    </select>
+
+    <select id="findByUserAndAchievement" resultMap="UserAchievementResultMap">
+        SELECT * FROM user_achievements
+        WHERE user_id = #{userId} AND achievement_id = #{achievementId}
+    </select>
+
+    <insert id="insertUserAchievement">
+        INSERT INTO user_achievements (user_id, achievement_id, unlocked_at)
+        VALUES (#{userId}, #{achievementId}, NOW())
+    </insert>
+
+    <select id="countUnlockedByUser" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM user_achievements WHERE user_id = #{userId}
+    </select>
+
+</mapper>

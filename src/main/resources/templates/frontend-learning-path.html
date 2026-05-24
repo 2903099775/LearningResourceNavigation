@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>前端开发路线 - 学习资源导航系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        header {
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #007bff;
+            text-decoration: none;
+            line-height: 1.5;
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+            margin: 0;
+            padding: 0;
+            align-items: center;
+        }
+        
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        
+        .nav-links a:hover {
+            color: #007bff;
+        }
+
+        .nav-links .dropdown { position: relative; }
+        .nav-links .dropdown-toggle { cursor: pointer; display: flex; align-items: center; gap: 4px; }
+        .nav-links .dropdown-toggle::after { content: '\25BC'; font-size: 0.6em; transition: transform 0.3s; }
+        .nav-links .dropdown:hover .dropdown-toggle::after { transform: rotate(180deg); }
+        .nav-links .dropdown-menu { display: none; position: absolute; top: 100%; left: -1rem; background: #fff; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); min-width: 180px; padding: 0.5rem 0; z-index: 1001; }
+        .nav-links .dropdown:hover .dropdown-menu { display: block; }
+        .nav-links .dropdown-menu a { display: block; padding: 0.6rem 1.2rem; color: #333; white-space: nowrap; border-radius: 4px; margin: 0 0.3rem; text-decoration: none; }
+        .nav-links .dropdown-menu a:hover { background: #f0f7ff; color: #007bff; }
+        .nav-links .dropdown-menu .menu-group { padding: 0.3rem 1.2rem 0.1rem; font-size: 0.75rem; color: #999; font-weight: 600; }
+        
+        .search-box {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        
+        .search-box input {
+            padding: 0.5rem 1rem;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            outline: none;
+            width: 300px;
+            line-height: 1.5;
+        }
+        
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .auth-buttons {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #007bff;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+        }
+        
+        .breadcrumb {
+            background-color: #f8f9fa;
+            padding: 1rem 0;
+            margin-bottom: 2rem;
+        }
+        
+        .breadcrumb a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        
+        .breadcrumb span {
+            color: #666;
+            margin: 0 0.5rem;
+        }
+        
+        .path-header {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .path-title {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+        
+        .path-description {
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+        
+        .path-meta {
+            display: flex;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            font-size: 0.9rem;
+        }
+        
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .difficulty {
+            color: #ff6b6b;
+        }
+        
+        .duration {
+            color: #28a745;
+        }
+        
+        .learners {
+            color: #007bff;
+        }
+        
+        .path-actions {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+        
+        .btn-outline {
+            background-color: transparent;
+            color: #007bff;
+            border: 1px solid #007bff;
+        }
+        
+        .btn-outline:hover {
+            background-color: #007bff;
+            color: white;
+        }
+        
+        .progress-section {
+            margin-bottom: 2rem;
+        }
+        
+        .progress-label {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: #007bff;
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+        
+        .progress-text {
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 0.5rem;
+        }
+        
+        .units-section {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 2rem;
+        }
+        
+        .unit {
+            margin-bottom: 2rem;
+            border-bottom: 1px solid #e9ecef;
+            padding-bottom: 2rem;
+        }
+        
+        .unit:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .unit-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .unit-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .unit-meta {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .resources-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .resource-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            transition: all 0.3s;
+        }
+        
+        .resource-item:hover {
+            background-color: #e9ecef;
+        }
+        
+        .resource-status {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        .status-completed {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .status-in-progress {
+            background-color: #ffc107;
+            color: #333;
+        }
+        
+        .status-not-started {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        .resource-content {
+            flex: 1;
+        }
+        
+        .resource-title {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+        
+        .resource-meta {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.8rem;
+            color: #666;
+        }
+        
+        .resource-type {
+            background-color: #e3f2fd;
+            color: #1976d2;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+        }
+        
+        .resource-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
+        }
+        
+        .btn-success {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background-color: #218838;
+        }
+        
+        .btn-info {
+            background-color: #17a2b8;
+            color: white;
+        }
+        
+        .btn-info:hover {
+            background-color: #138496;
+        }
+        
+        footer {
+            border-top: 1px solid #eaeaea;
+            padding: 2rem 0;
+            margin-top: 4rem;
+            text-align: center;
+            background-color: #fff;
+        }
+
+        .footer-copy {
+            color: #999;
+            font-size: 0.85rem;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <nav>
+                <a href="/" class="logo">学习资源导航</a>
+                <ul class="nav-links">
+                    <li><a href="/">首页</a></li>
+                    <li class="dropdown">
+                        <a href="/learning-domains" class="dropdown-toggle">学习领域</a>
+                        <div class="dropdown-menu" id="domainDropdown"></div>
+                    </li>
+                    <li><a href="/learning-path">学习路线</a></li>
+                    <li><a href="/community">社区</a></li>
+                </ul>
+                <div class="search-box">
+                    <input type="text" placeholder="搜索学习资源...">
+                </div>
+                <div class="user-menu">
+                    <a href="profile.html" style="text-decoration: none;">
+                        <div class="user-avatar">U</div>
+                    </a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <div class="breadcrumb">
+            <div class="container">
+                <a href="/">首页</a>
+                <span>></span>
+                <a href="/learning-path">学习路线</a>
+                <span>></span>
+                <span>前端开发路线</span>
+            </div>
+        </div>
+
+        <div class="container">
+            <section class="path-header">
+                <h1 class="path-title">前端开发学习路线</h1>
+                <p class="path-description">
+                    从零基础到前端高级工程师的完整学习路径，涵盖HTML、CSS、JavaScript、前端框架等核心内容。
+                    本路线设计科学合理，循序渐进，帮助你系统掌握前端开发技能。
+                </p>
+                <div class="path-meta">
+                    <div class="meta-item">
+                        <span class="difficulty">⭐⭐⭐</span>
+                        <span>难度：中等</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="duration">⏱️</span>
+                        <span>预计时长：5个月</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="learners">👥</span>
+                        <span>学习人数：3,156</span>
+                    </div>
+                </div>
+                <div class="path-actions">
+                    <button class="btn btn-primary">
+                        <span>▶️</span>
+                        开始学习
+                    </button>
+                    <button class="btn btn-outline">
+                        <span>❤️</span>
+                        收藏路线
+                    </button>
+                    <button class="btn btn-outline">
+                        <span>🔗</span>
+                        分享
+                    </button>
+                </div>
+                <div class="progress-section">
+                    <div class="progress-label">你的进度</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 25%"></div>
+                    </div>
+                    <div class="progress-text">25% 完成 (15/60 单元已完成)</div>
+                </div>
+            </section>
+
+            <section class="units-section">
+                <h2 style="margin-bottom: 2rem; color: #333;">学习阶段</h2>
+                
+                <div class="unit">
+                    <div class="unit-header">
+                        <h3 class="unit-title">第一阶段：前端基础（预计4周）</h3>
+                        <span class="unit-meta">8个资源</span>
+                    </div>
+                    <div class="resources-list">
+                        <div class="resource-item">
+                            <div class="resource-status status-completed">✅</div>
+                            <div class="resource-content">
+                                <div class="resource-title">1.1 HTML5基础与语义化标签</div>
+                                <div class="resource-meta">
+                                    <span class="resource-type">视频</span>
+                                    <span>6小时</span>
+                                    <span>B站</span>
+                                    <span>黑马程序员</span>
+                                </div>
+                            </div>
+                            <div class="resource-actions">
+                                <button class="btn btn-sm btn-info">笔记</button>
+                                <button class="btn btn-sm btn-success">已完成</button>
+                                <button class="btn btn-sm btn-outline">收藏</button>
+                            </div>
+                        </div>
+                        <div class="resource-item">
+                            <div class="resource-status status-in-progress">🔄</div>
+                            <div class="resource-content">
+                                <div class="resource-title">1.2 CSS3样式与布局</div>
+                                <div class="resource-meta">
+                                    <span class="resource-type">视频</span>
+                                    <span>8小时</span>
+                                    <span>B站</span>
+                                    <span>尚硅谷</span>
+                                </div>
+                            </div>
+                            <div class="resource-actions">
+                                <button class="btn btn-sm btn-info">笔记✍️</button>
+                                <button class="btn btn-sm btn-success">标记完成</button>
+                                <button class="btn btn-sm btn-outline">收藏</button>
+                            </div>
+                        </div>
+                        <div class="resource-item">
+                            <div class="resource-status status-not-started">⏳</div>
+                            <div class="resource-content">
+                                <div class="resource-title">1.3 JavaScript基础语法</div>
+                                <div class="resource-meta">
+                                    <span class="resource-type">视频</span>
+                                    <span>12小时</span>
+                                    <span>B站</span>
+                                    <span>动力节点</span>
+                                </div>
+                            </div>
+                            <div class="resource-actions">
+                                <button class="btn btn-sm btn-info">笔记</button>
+                                <button class="btn btn-sm btn-success">标记完成</button>
+                                <button class="btn btn-sm btn-outline">收藏</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="unit">
+                    <div class="unit-header">
+                        <h3 class="unit-title">第二阶段：JavaScript进阶（预计3周）</h3>
+                        <span class="unit-meta">6个资源</span>
+                    </div>
+                    <div class="resources-list">
+                        <div class="resource-item">
+                            <div class="resource-status status-not-started">⏳</div>
+                            <div class="resource-content">
+                                <div class="resource-title">2.1 JavaScript DOM操作</div>
+                                <div class="resource-meta">
+                                    <span class="resource-type">视频</span>
+                                    <span>6小时</span>
+                                    <span>B站</span>
+                                    <span>黑马程序员</span>
+                                </div>
+                            </div>
+                            <div class="resource-actions">
+                                <button class="btn btn-sm btn-info">笔记</button>
+                                <button class="btn btn-sm btn-success">标记完成</button>
+                                <button class="btn btn-sm btn-outline">收藏</button>
+                            </div>
+                        </div>
+                        <div class="resource-item">
+                            <div class="resource-status status-not-started">⏳</div>
+                            <div class="resource-content">
+                                <div class="resource-title">2.2 JavaScript异步编程</div>
+                                <div class="resource-meta">
+                                    <span class="resource-type">视频</span>
+                                    <span>4小时</span>
+                                    <span>B站</span>
+                                    <span>尚硅谷</span>
+                                </div>
+                            </div>
+                            <div class="resource-actions">
+                                <button class="btn btn-sm btn-info">笔记</button>
+                                <button class="btn btn-sm btn-success">标记完成</button>
+                                <button class="btn btn-sm btn-outline">收藏</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="unit">
+                    <div class="unit-header">
+                        <h3 class="unit-title">🔒 第三阶段：前端框架（预计6周）</h3>
+                        <span class="unit-meta">10个资源</span>
+                    </div>
+                    <div style="text-align: center; padding: 2rem; color: #ff6b6b;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">🔒</div>
+                        <p style="margin-bottom: 1rem;">此阶段为VIP专属内容</p>
+                        <button class="btn btn-primary" style="background-color: #ff6b6b;">
+                            <span>⚡</span>
+                            升级VIP解锁更多内容
+                        </button>
+                    </div>
+                    <div style="border-top: 2px dashed #ff6b6b; margin: 2rem 0;"></div>
+                </div>
+
+                <div class="unit">
+                    <div class="unit-header">
+                        <h3 class="unit-title">第四阶段：前端工程化（预计3周）</h3>
+                        <span class="unit-meta">5个资源</span>
+                    </div>
+                    <div class="resources-list">
+                        <div class="resource-item">
+                            <div class="resource-status status-not-started">⏳</div>
+                            <div class="resource-content">
+                                <div class="resource-title">4.1 前端构建工具（Webpack）</div>
+                                <div class="resource-meta">
+                                    <span class="resource-type">视频</span>
+                                    <span>6小时</span>
+                                    <span>B站</span>
+                                    <span>尚硅谷</span>
+                                </div>
+                            </div>
+                            <div class="resource-actions">
+                                <button class="btn btn-sm btn-info">笔记</button>
+                                <button class="btn btn-sm btn-success">标记完成</button>
+                                <button class="btn btn-sm btn-outline">收藏</button>
+                            </div>
+                        </div>
+                        <div class="resource-item">
+                            <div class="resource-status status-not-started">⏳</div>
+                            <div class="resource-content">
+                                <div class="resource-title">4.2 前端代码规范与Git</div>
+                                <div class="resource-meta">
+                                    <span class="resource-type">视频</span>
+                                    <span>4小时</span>
+                                    <span>B站</span>
+                                    <span>黑马程序员</span>
+                                </div>
+                            </div>
+                            <div class="resource-actions">
+                                <button class="btn btn-sm btn-info">笔记</button>
+                                <button class="btn btn-sm btn-success">标记完成</button>
+                                <button class="btn btn-sm btn-outline">收藏</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="comments-section" style="background-color: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); padding: 2rem; margin-top: 2rem;">
+                <h2 style="margin-bottom: 2rem; color: #333;">💬 路线讨论区</h2>
+                
+                <div style="margin-bottom: 2rem;">
+                    <textarea style="width: 100%; min-height: 100px; padding: 1rem; border: 1px solid #ddd; border-radius: 6px; resize: vertical;" placeholder="分享你的学习心得..."></textarea>
+                    <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1rem;">
+                        <button class="btn btn-outline">取消</button>
+                        <button class="btn btn-primary">发表评论</button>
+                    </div>
+                </div>
+
+                <div class="comments-list">
+                    <div style="border: 1px solid #eee; border-radius: 6px; padding: 1.5rem; margin-bottom: 1rem;">
+                        <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 1rem;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <div class="user-avatar" style="width: 32px; height: 32px; font-size: 0.8rem;">U</div>
+                                <div>
+                                    <div style="font-weight: 500;">frontend123</div>
+                                    <div style="font-size: 0.8rem; color: #666;">2024-01-20 15:30</div>
+                                </div>
+                            </div>
+                            <div style="color: #ff6b6b;">⭐⭐⭐⭐⭐</div>
+                        </div>
+                        <p style="margin-bottom: 1rem;">非常全面的前端学习路线，从基础到进阶都有覆盖，跟着学习收获很大！</p>
+                        <div style="display: flex; gap: 1rem; font-size: 0.8rem;">
+                            <button style="background: none; border: none; color: #007bff; cursor: pointer;">❤️ 点赞 (15)</button>
+                            <button style="background: none; border: none; color: #666; cursor: pointer;">💬 回复</button>
+                        </div>
+                    </div>
+
+                    <div style="border: 1px solid #eee; border-radius: 6px; padding: 1.5rem; margin-bottom: 1rem;">
+                        <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 1rem;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <div class="user-avatar" style="width: 32px; height: 32px; font-size: 0.8rem;">V</div>
+                                <div>
+                                    <div style="font-weight: 500;">vip789</div>
+                                    <div style="font-size: 0.8rem; color: #666;">2024-01-20 14:20</div>
+                                </div>
+                            </div>
+                            <div style="color: #ff6b6b;">⭐⭐⭐⭐</div>
+                        </div>
+                        <p style="margin-bottom: 1rem;">资源质量很高，讲解很详细，框架部分的内容非常实用，推荐给所有前端学习者。</p>
+                        <div style="display: flex; gap: 1rem; font-size: 0.8rem;">
+                            <button style="background: none; border: none; color: #007bff; cursor: pointer;">❤️ 点赞 (10)</button>
+                            <button style="background: none; border: none; color: #666; cursor: pointer;">💬 回复</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p class="footer-copy">&copy; 2026 学习资源导航系统</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDomainDropdown();
+            const startLearningBtn = document.querySelector('.btn-primary');
+            startLearningBtn.addEventListener('click', function() {
+                window.location.href = 'learning-unit.html';
+            });
+
+            const markCompleteBtns = document.querySelectorAll('.btn-success');
+            markCompleteBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const resourceItem = this.closest('.resource-item');
+                    const statusBadge = resourceItem.querySelector('.resource-status');
+                    
+                    if (statusBadge.classList.contains('status-not-started')) {
+                        statusBadge.classList.remove('status-not-started');
+                        statusBadge.classList.add('status-completed');
+                        statusBadge.textContent = '✅';
+                        this.textContent = '已完成';
+                        alert('资源已标记为完成！');
+                    }
+                });
+            });
+
+            const noteBtns = document.querySelectorAll('.btn-info');
+            noteBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    window.location.href = 'learning-unit.html';
+                });
+            });
+
+            const favoriteBtns = document.querySelectorAll('.btn-outline');
+            favoriteBtns.forEach(btn => {
+                if (btn.textContent.trim() === '收藏路线' || btn.textContent.trim() === '收藏') {
+                    btn.addEventListener('click', function() {
+                        if (this.textContent.includes('收藏')) {
+                            this.innerHTML = '<span>❤️</span>已收藏';
+                            alert('已添加到收藏夹！');
+                        } else {
+                            this.innerHTML = '<span>🤍</span>收藏';
+                            alert('已从收藏夹移除！');
+                        }
+                    });
+                }
+            });
+
+            const resourceItems = document.querySelectorAll('.resource-item');
+            resourceItems.forEach(item => {
+                item.addEventListener('click', function(e) {
+                    if (!e.target.closest('.btn')) {
+                        window.location.href = 'learning-unit.html';
+                    }
+                });
+            });
+
+            const vipBtn = document.querySelector('.btn-primary[style*="background-color: #ff6b6b"]');
+            if (vipBtn) {
+                vipBtn.addEventListener('click', function() {
+                    alert('VIP升级功能开发中...');
+                });
+            }
+
+            const commentBtn = document.querySelector('.comments-section .btn-primary');
+            if (commentBtn) {
+                commentBtn.addEventListener('click', function() {
+                    alert('评论已发表！');
+                });
+            }
+
+            const cancelBtn = document.querySelector('.comments-section .btn-outline');
+            if (cancelBtn) {
+                cancelBtn.addEventListener('click', function() {
+                    document.querySelector('.comments-section textarea').value = '';
+                });
+            }
+
+            const likeBtns = document.querySelectorAll('.comments-list button:nth-child(1)');
+            likeBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    this.textContent = '❤️ 点赞 (16)';
+                });
+            });
+
+            const replyBtns = document.querySelectorAll('.comments-list button:nth-child(2)');
+            replyBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    alert('回复功能开发中...');
+                });
+            });
+        });
+
+        async function loadDomainDropdown() {
+            try {
+                const [catRes, subRes] = await Promise.all([
+                    fetch('/api/categories/active'),
+                    fetch('/api/subcategories/all')
+                ]);
+                const catData = await catRes.json();
+                const subData = await subRes.json();
+                if (catData.code !== 200 || subData.code !== 200) return;
+                const categories = catData.data || [];
+                const subcategories = subData.data || [];
+                const dropdown = document.getElementById('domainDropdown');
+                if (!dropdown) return;
+                categories.forEach(cat => {
+                    const catSubs = subcategories.filter(s => s.categoryId === cat.id);
+                    if (catSubs.length > 0) {
+                        const group = document.createElement('div');
+                        group.className = 'menu-group';
+                        group.textContent = cat.name;
+                        dropdown.appendChild(group);
+                    }
+                    catSubs.forEach(sub => {
+                        const a = document.createElement('a');
+                        a.href = '/learning-subdomain?id=' + sub.id;
+                        a.textContent = sub.name;
+                        dropdown.appendChild(a);
+                    });
+                });
+            } catch(e) { /* silently fail */ }
+        }
+    </script>
+</body>
+</html>

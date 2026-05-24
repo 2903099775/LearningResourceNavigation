@@ -1,0 +1,1248 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>VIP会员充值 - 学习资源导航系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        header {
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #007bff;
+            text-decoration: none;
+            line-height: 1.5;
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+            margin: 0;
+            padding: 0;
+            align-items: center;
+        }
+        
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        
+        .nav-links a:hover {
+            color: #007bff;
+        }
+
+        .nav-links .dropdown { position: relative; }
+        .nav-links .dropdown-toggle { cursor: pointer; display: flex; align-items: center; gap: 4px; }
+        .nav-links .dropdown-toggle::after { content: '\25BC'; font-size: 0.6em; transition: transform 0.3s; }
+        .nav-links .dropdown:hover .dropdown-toggle::after { transform: rotate(180deg); }
+        .nav-links .dropdown-menu { display: none; position: absolute; top: 100%; left: -1rem; background: #fff; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); min-width: 180px; padding: 0.5rem 0; z-index: 1001; }
+        .nav-links .dropdown:hover .dropdown-menu { display: block; }
+        .nav-links .dropdown-menu a { display: block; padding: 0.6rem 1.2rem; color: #333; white-space: nowrap; border-radius: 4px; margin: 0 0.3rem; text-decoration: none; }
+        .nav-links .dropdown-menu a:hover { background: #f0f7ff; color: #007bff; }
+        .nav-links .dropdown-menu .menu-group { padding: 0.3rem 1.2rem 0.1rem; font-size: 0.75rem; color: #999; font-weight: 600; }
+        
+        .search-box {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        
+        .search-box input {
+            padding: 0.5rem 1rem;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            outline: none;
+            width: 300px;
+            line-height: 1.5;
+        }
+        
+        .auth-buttons {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        
+        .user-menu {
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #007bff;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            transition: all 0.3s;
+            line-height: 1;
+        }
+        
+        .user-avatar:hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
+        }
+        
+        .user-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 0.5rem;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            min-width: 200px;
+            z-index: 1001;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s;
+        }
+        
+        .user-menu:hover .user-dropdown {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .user-dropdown-content {
+            padding: 1rem;
+        }
+        
+        .user-info {
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 1rem;
+        }
+        
+        .user-name {
+            font-weight: bold;
+            margin-bottom: 0.25rem;
+        }
+        
+        .user-email {
+            font-size: 0.8rem;
+            color: #666;
+        }
+        
+        .dropdown-menu {
+            list-style: none;
+        }
+        
+        .dropdown-menu li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .dropdown-menu li:last-child {
+            margin-bottom: 0;
+        }
+        
+        .dropdown-menu a {
+            display: block;
+            padding: 0.5rem;
+            text-decoration: none;
+            color: #333;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        
+        .dropdown-menu a:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .dropdown-divider {
+            height: 1px;
+            background-color: #eee;
+            margin: 0.75rem 0;
+        }
+        
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+
+        .btn-vip {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .btn-vip::before {
+            content: '💎';
+            font-size: 1rem;
+        }
+
+        .btn-vip:hover {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+        }
+
+        .btn-vip:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 6px rgba(245, 158, 11, 0.3);
+        }
+        
+        .btn-outline {
+            background-color: transparent;
+            color: #007bff;
+            border: 1px solid #007bff;
+        }
+        
+        .btn-outline:hover {
+            background-color: #007bff;
+            color: white;
+        }
+        
+        .btn-large {
+            padding: 0.75rem 1.5rem;
+            font-size: 1.1rem;
+        }
+        
+        .vip-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4rem 0;
+            text-align: center;
+        }
+        
+        .vip-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .vip-header p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+        
+        .vip-plans {
+            padding: 3rem 0;
+        }
+        
+        .section-title {
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            color: #333;
+        }
+        
+        .plans-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .plan-card {
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+        
+        .plan-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .plan-header {
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .plan-header.basic {
+            background-color: #f8f9fa;
+        }
+        
+        .plan-header.standard {
+            background-color: #e3f2fd;
+        }
+        
+        .plan-header.premium {
+            background-color: #f3e5f5;
+        }
+        
+        .plan-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .plan-price {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .plan-price span {
+            font-size: 1rem;
+            font-weight: normal;
+            color: #666;
+        }
+        
+        .plan-features {
+            padding: 2rem;
+        }
+        
+        .feature-list {
+            list-style: none;
+            margin-bottom: 2rem;
+        }
+        
+        .feature-list li {
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .feature-list li:before {
+            content: "✓";
+            color: #28a745;
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+        
+        .plan-cta {
+            text-align: center;
+            padding: 0 2rem 2rem;
+        }
+        
+        .vip-benefits-section {
+            padding: 3rem 0;
+            background-color: #f8f9fa;
+        }
+        
+        .vip-benefits {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+        
+        .vip-benefit-card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+        
+        .vip-benefit-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .vip-benefit-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .vip-benefit-card h3 {
+            margin-bottom: 1rem;
+            color: #333;
+        }
+        
+        .vip-benefit-card p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .refund-section {
+            padding: 3rem 0;
+        }
+
+        .refund-card {
+            background: linear-gradient(135deg, #fff5f5 0%, #ffffff 100%);
+            border-radius: 12px;
+            padding: 2.5rem;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+            border: 1px solid #ffe0e0;
+        }
+
+        .refund-card h2 {
+            color: #e74c3c;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .refund-policy {
+            background-color: #fff9f9;
+            border-radius: 8px;
+            padding: 1.2rem 1.5rem;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid #e74c3c;
+        }
+
+        .refund-policy p {
+            color: #666;
+            font-size: 0.9rem;
+            line-height: 1.8;
+            margin: 0;
+        }
+
+        .refund-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .refund-form textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            resize: vertical;
+            outline: none;
+            transition: border-color 0.3s;
+            font-family: inherit;
+        }
+
+        .refund-form textarea:focus {
+            border-color: #e74c3c;
+        }
+
+        .refund-form textarea::placeholder {
+            color: #aaa;
+        }
+
+        .refund-btn {
+            align-self: flex-start;
+            padding: 0.75rem 2rem;
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .refund-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
+        }
+
+        .refund-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .refund-not-vip {
+            text-align: center;
+            padding: 2rem;
+            color: #999;
+        }
+
+        .refund-not-vip p {
+            font-size: 1rem;
+        }
+
+        .faq-section {
+            padding: 3rem 0;
+        }
+        
+        .faq-item {
+            background-color: white;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .faq-question {
+            padding: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 500;
+        }
+        
+        .faq-answer {
+            padding: 0 1.5rem 1.5rem;
+            display: none;
+            color: #666;
+        }
+        
+        .faq-answer.show {
+            display: block;
+        }
+        
+        .faq-question:after {
+            content: "+";
+            font-size: 1.5rem;
+            font-weight: bold;
+            transition: transform 0.3s;
+        }
+        
+        .faq-question.active:after {
+            content: "-";
+        }
+
+        /* 充值确认弹窗样式 */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal-box {
+            background-color: #fff;
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+            animation: modalIn 0.3s ease;
+        }
+
+        @keyframes modalIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .modal-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .modal-desc {
+            font-size: 0.95rem;
+            color: #666;
+            margin-bottom: 1.5rem;
+            line-height: 1.5;
+        }
+
+        .modal-desc .highlight {
+            color: #e74c3c;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .modal-buttons .btn {
+            padding: 0.6rem 2rem;
+            font-size: 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-cancel {
+            background-color: #f0f0f0;
+            color: #666;
+            border: 1px solid #ddd;
+        }
+
+        .btn-cancel:hover {
+            background-color: #e0e0e0;
+        }
+
+        .btn-confirm {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+        }
+
+        .btn-confirm:hover {
+            opacity: 0.9;
+        }
+
+        .btn-confirm:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* VIP 标识样式 */
+        .vip-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #f5af19, #f12711);
+            color: white;
+            padding: 0.15rem 0.5rem;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            margin-left: 0.5rem;
+        }
+
+        footer {
+            border-top: 1px solid #eaeaea;
+            padding: 2rem 0;
+            margin-top: 4rem;
+            text-align: center;
+            background-color: #fff;
+        }
+
+        .footer-copy {
+            color: #999;
+            font-size: 0.85rem;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <nav>
+                <a href="/" class="logo">学习资源导航</a>
+                <ul class="nav-links">
+                    <li><a href="/">首页</a></li>
+                    <li class="dropdown">
+                        <a href="/learning-domains" class="dropdown-toggle">学习领域</a>
+                        <div class="dropdown-menu" id="domainDropdown"></div>
+                    </li>
+                    <li><a href="/learning-path">学习路线</a></li>
+                    <li><a href="/community">社区</a></li>
+                    <li><a href="/vip" class="btn btn-primary">VIP充值</a></li>
+                </ul>
+                <div class="search-box">
+                    <input type="text" placeholder="搜索学习资源...">
+                </div>
+                <div class="auth-buttons">
+                    <div class="user-menu" id="userMenu">
+                        <div class="user-avatar" id="userAvatar">?</div>
+                        <div class="user-dropdown">
+                            <div class="user-dropdown-content">
+                                <div class="user-info" id="userInfo">
+                                    <div class="user-name">游客</div>
+                                    <div class="user-email">未登录</div>
+                                </div>
+                                <ul class="dropdown-menu" id="dropdownMenu">
+                                    <li><a href="/login" id="loginBtn">登录</a></li>
+                                    <li><a href="/register">注册</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="vip-header">
+            <div class="container">
+                <h1>VIP会员</h1>
+                <p>解锁更多优质学习资源，享受专属学习体验</p>
+            </div>
+        </section>
+
+        <section class="vip-plans">
+            <div class="container">
+                <h2 class="section-title">选择适合您的VIP方案</h2>
+                <div class="plans-grid">
+                    <div class="plan-card">
+                        <div class="plan-header basic">
+                            <h3 class="plan-title">月度会员</h3>
+                            <div class="plan-price">¥9.9<span>/月</span></div>
+                            <p>体验VIP特权</p>
+                        </div>
+                        <div class="plan-features">
+                            <ul class="feature-list">
+                                <li>访问所有基础学习路线</li>
+                                <li>解锁部分高级资源</li>
+                                <li>优先获取资源更新</li>
+                                <li>基础学习社区交流</li>
+                            </ul>
+                        </div>
+                        <div class="plan-cta">
+                            <button class="btn btn-primary btn-large upgrade-btn" data-months="1" data-plan="月度会员" data-price="¥9.9">立即充值</button>
+                        </div>
+                    </div>
+                    <div class="plan-card">
+                        <div class="plan-header standard">
+                            <h3 class="plan-title">季度会员</h3>
+                            <div class="plan-price">¥19.9<span>/3个月</span></div>
+                            <p>超值优惠选择</p>
+                        </div>
+                        <div class="plan-features">
+                            <ul class="feature-list">
+                                <li>访问所有学习路线</li>
+                                <li>解锁全部高级资源</li>
+                                <li>优先获取资源更新</li>
+                                <li>高级学习社区交流</li>
+                                <li>每月1次专家答疑</li>
+                            </ul>
+                        </div>
+                        <div class="plan-cta">
+                            <button class="btn btn-primary btn-large upgrade-btn" data-months="3" data-plan="季度会员" data-price="¥19.9">立即充值</button>
+                        </div>
+                    </div>
+                    <div class="plan-card">
+                        <div class="plan-header premium">
+                            <h3 class="plan-title">年度VIP</h3>
+                            <div class="plan-price">¥66<span>/年</span></div>
+                            <p>最超值的选择</p>
+                        </div>
+                        <div class="plan-features">
+                            <ul class="feature-list">
+                                <li>访问所有学习路线</li>
+                                <li>解锁全部高级资源</li>
+                                <li>优先获取资源更新</li>
+                                <li>高级学习社区交流</li>
+                                <li>每月3次专家答疑</li>
+                                <li>专属学习计划定制</li>
+                                <li>简历指导与职业规划</li>
+                            </ul>
+                        </div>
+                        <div class="plan-cta">
+                            <button class="btn btn-primary btn-large upgrade-btn" data-months="12" data-plan="年度VIP" data-price="¥66">立即充值</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="vip-benefits-section">
+            <div class="container">
+                <h2 class="section-title">VIP会员特权</h2>
+                <div class="vip-benefits">
+                    <div class="vip-benefit-card">
+                        <div class="vip-benefit-icon">🎯</div>
+                        <h3>专属学习路线</h3>
+                        <p>获取VIP专属学习路线，包含更多高级内容和实战项目</p>
+                    </div>
+                    <div class="vip-benefit-card">
+                        <div class="vip-benefit-icon">💎</div>
+                        <h3>无限制访问</h3>
+                        <p>解锁所有学习资源，无限制访问付费内容</p>
+                    </div>
+                    <div class="vip-benefit-card">
+                        <div class="vip-benefit-icon">🚀</div>
+                        <h3>优先更新</h3>
+                        <p>优先获取最新学习资源和路线更新</p>
+                    </div>
+                    <div class="vip-benefit-card">
+                        <div class="vip-benefit-icon">🤝</div>
+                        <h3>专家指导</h3>
+                        <p>获得专业导师一对一指导和答疑服务</p>
+                    </div>
+                    <div class="vip-benefit-card">
+                        <div class="vip-benefit-icon">📊</div>
+                        <h3>学习数据分析</h3>
+                        <p>获取详细的学习数据分析和进度报告</p>
+                    </div>
+                    <div class="vip-benefit-card">
+                        <div class="vip-benefit-icon">🏆</div>
+                        <h3>证书认证</h3>
+                        <p>完成学习路线后获得专属VIP认证证书</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="refund-section">
+            <div class="container">
+                <div class="refund-card">
+                    <h2>💰 退款申请</h2>
+                    <div class="refund-policy">
+                        <p>退款政策：开通VIP会员后7天内，如果您未使用任何VIP专属功能，可申请全额退款。超过7天或已使用VIP功能的，不予退款。退款成功后，VIP会员资格将立即取消。</p>
+                    </div>
+                    <div id="refundContent">
+                        <div class="refund-not-vip" id="refundNotVip">
+                            <p>您当前不是VIP会员，无需申请退款</p>
+                        </div>
+                        <div class="refund-form" id="refundForm" style="display:none;">
+                            <textarea id="refundReason" placeholder="请输入退款原因（必填）" maxlength="200"></textarea>
+                            <button class="refund-btn" id="refundBtn" onclick="submitRefund()">提交退款申请</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="faq-section">
+            <div class="container">
+                <h2 class="section-title">常见问题</h2>
+                <div class="faq-item">
+                    <div class="faq-question">如何开通VIP会员？</div>
+                    <div class="faq-answer">
+                        <p>您可以在本页面选择适合您的VIP方案，点击"立即购买"按钮，按照提示完成支付即可开通VIP会员。</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">VIP会员有效期是多久？</div>
+                    <div class="faq-answer">
+                        <p>VIP会员有效期根据您选择的方案而定：月度会员1个月、季度会员3个月、年度VIP12个月，自开通之日起计算。</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">如何取消VIP会员？</div>
+                    <div class="faq-answer">
+                        <p>您可以在本页面上方的"退款申请"模块中提交退款申请。开通后7天内且未使用VIP专属功能的，可申请全额退款，退款成功后VIP会员将立即取消。</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">VIP会员可以退款吗？</div>
+                    <div class="faq-answer">
+                        <p>开通VIP会员后7天内，如果您未使用任何VIP专属功能，可申请全额退款。超过7天或已使用VIP功能的，不予退款。</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">VIP会员特权有哪些？</div>
+                    <div class="faq-answer">
+                        <p>VIP会员享有专属学习路线、无限制访问所有资源、优先获取更新、专家指导、学习数据分析和证书认证等特权，具体权益根据您选择的VIP方案有所不同。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p class="footer-copy">&copy; 2026 学习资源导航系统</p>
+        </div>
+    </footer>
+
+    <!-- VIP充值确认弹窗 -->
+    <div class="modal-overlay" id="vipModal">
+        <div class="modal-box">
+            <div class="modal-icon">💎</div>
+            <div class="modal-title" id="modalTitle">确认充值</div>
+            <div class="modal-desc" id="modalDesc">
+                您即将充值 <span class="highlight" id="modalPlan">-</span><br>
+                充值 <span class="highlight" id="modalMonths">-</span> 个月<br>
+                费用 <span class="highlight" id="modalPrice">-</span>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn btn-cancel" id="modalCancel">取消</button>
+                <button class="btn btn-confirm" id="modalConfirm">确认充值</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let user = null;
+        let token = localStorage.getItem('token');
+
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDomainDropdown();
+            // 检查用户登录状态，然后初始化页面功能
+            checkLoginStatus().then(function() {
+                initUpgradeButtons();
+                updateVipStatus();
+            });
+
+            // 初始化FAQ折叠功能
+            initFAQ();
+
+            // 搜索功能
+            const searchInput = document.querySelector('.search-box input');
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    const searchTerm = searchInput.value.trim();
+                    if (searchTerm) {
+                        alert('搜索功能开发中...');
+                    }
+                }
+            });
+        });
+
+        // 检查登录状态
+        function checkLoginStatus() {
+            if (token) {
+                return fetch('/api/user/profile', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                })
+                .then(response => {
+                    // 只在认证失败时清除token，其他错误不清
+                    if (response.status === 401 || response.status === 403) {
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('user');
+                        token = null;
+                        user = null;
+                        updateUserMenu();
+                        return null;
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data && data.code === 200) {
+                        user = data.data;
+                        localStorage.setItem('user', JSON.stringify(user));
+                        updateUserMenu();
+                    }
+                    // 非200的code不清token
+                })
+                .catch(error => {
+                    console.error('验证登录状态失败:', error);
+                    // 网络错误不清token，等下次重试
+                });
+            }
+            updateUserMenu();
+            return Promise.resolve();
+        }
+
+        // 更新用户菜单
+        function updateUserMenu() {
+            const userAvatar = document.getElementById('userAvatar');
+            const userInfo = document.getElementById('userInfo');
+            const dropdownMenu = document.getElementById('dropdownMenu');
+
+            if (user) {
+                // 已登录用户
+                if (user.avatar) {
+                    userAvatar.innerHTML = `<img src="${user.avatar + (user.avatar.includes('?') ? '&' : '?') + 't=' + Date.now()}" alt="${user.username}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+                } else {
+                    userAvatar.textContent = user.username.charAt(0).toUpperCase();
+                }
+                userInfo.innerHTML = `
+                    <div class="user-name">${user.username}${user.vipExpireDate && new Date(user.vipExpireDate) > new Date() ? '<span class="vip-badge">VIP</span>' : ''}</div>
+                    <div class="user-email">${user.email}</div>
+                `;
+                dropdownMenu.innerHTML = `
+                    <li><a href="/profile">个人中心</a></li>
+                    <li><a href="#">我的学习</a></li>
+                    <li><a href="#">我的收藏</a></li>
+                    <div class="dropdown-divider"></div>
+                    <li><a href="#" id="logoutBtn">退出登录</a></li>
+                `;
+
+                // 添加退出登录事件
+                document.getElementById('logoutBtn').addEventListener('click', function(e) {
+                    e.preventDefault();
+                    localStorage.removeItem('token');
+                    token = null;
+                    user = null;
+                    updateUserMenu();
+                    alert('已退出登录');
+                });
+            } else {
+                // 未登录用户
+                userAvatar.textContent = '?';
+                userInfo.innerHTML = `
+                    <div class="user-name">游客</div>
+                    <div class="user-email">未登录</div>
+                `;
+                dropdownMenu.innerHTML = `
+                    <li><a href="/login" id="loginBtn">登录</a></li>
+                    <li><a href="/register">注册</a></li>
+                `;
+            }
+        }
+
+        // 根据VIP状态更新页面显示
+        function updateVipStatus() {
+            const isVip = user && user.vipExpireDate && new Date(user.vipExpireDate) > new Date();
+            const header = document.querySelector('.vip-header');
+
+            if (isVip) {
+                const expireDate = user.vipExpireDate;
+                const formattedDate = new Date(expireDate).toLocaleDateString('zh-CN', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit'
+                }).replace(/\//g, '-');
+                header.querySelector('h1').innerHTML = 'VIP会员 <span class="vip-badge">已开通</span>';
+                header.querySelector('p').textContent = '您的VIP有效期至 ' + formattedDate + '，感谢您的支持！';
+            }
+
+            const refundNotVip = document.getElementById('refundNotVip');
+            const refundForm = document.getElementById('refundForm');
+            if (isVip) {
+                refundNotVip.style.display = 'none';
+                refundForm.style.display = 'flex';
+            } else {
+                refundNotVip.style.display = 'block';
+                refundForm.style.display = 'none';
+            }
+        }
+
+        // 初始化充值按钮事件
+        function initUpgradeButtons() {
+            const modal = document.getElementById('vipModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalPlan = document.getElementById('modalPlan');
+            const modalMonths = document.getElementById('modalMonths');
+            const modalPrice = document.getElementById('modalPrice');
+            const modalConfirm = document.getElementById('modalConfirm');
+            const modalCancel = document.getElementById('modalCancel');
+
+            let pendingMonths = 0;
+
+            // 绑定所有充值按钮
+            document.querySelectorAll('.upgrade-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    // 未登录则跳转登录页
+                    if (!user) {
+                        if (confirm('请先登录后再充值，是否前往登录页面？')) {
+                            window.location.href = '/login';
+                        }
+                        return;
+                    }
+
+                    // 已是VIP则提示
+                    const isVip = user.vipExpireDate && new Date(user.vipExpireDate) > new Date();
+                    if (isVip) {
+                        // 允许续费，弹窗提示续费
+                    }
+
+                    const plan = this.dataset.plan;
+                    const months = parseInt(this.dataset.months);
+                    const price = this.dataset.price;
+
+                    pendingMonths = months;
+
+                    // 填充弹窗内容
+                    modalPlan.textContent = plan;
+                    modalMonths.textContent = months;
+                    modalPrice.textContent = price;
+                    modalTitle.textContent = isVip ? '确认续费VIP' : '确认充值VIP';
+
+                    // 显示弹窗
+                    modal.classList.add('show');
+                });
+            });
+
+            // 取消按钮
+            modalCancel.addEventListener('click', function() {
+                modal.classList.remove('show');
+                pendingMonths = 0;
+            });
+
+            // 点击遮罩层关闭
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    modal.classList.remove('show');
+                    pendingMonths = 0;
+                }
+            });
+
+            // 确认充值按钮
+            modalConfirm.addEventListener('click', function() {
+                if (pendingMonths <= 0) return;
+
+                // 禁用按钮防止重复点击
+                modalConfirm.disabled = true;
+                modalConfirm.textContent = '充值中...';
+
+                fetch('/api/user/vip/upgrade', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ months: pendingMonths })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    modal.classList.remove('show');
+                    modalConfirm.disabled = false;
+                    modalConfirm.textContent = '确认充值';
+                    pendingMonths = 0;
+
+                    if (data && data.code === 200) {
+                        // 充值成功，更新本地用户信息
+                        user = data.data;
+                        localStorage.setItem('user', JSON.stringify(user));
+                        updateUserMenu();
+                        updateVipStatus();
+
+                        // 显示成功提示
+                        alert('🎉 充值成功！VIP有效期至 ' + user.vipExpireDate);
+                    } else {
+                        alert('充值失败：' + (data ? data.message : '未知错误'));
+                    }
+                })
+                .catch(error => {
+                    console.error('充值请求失败:', error);
+                    modal.classList.remove('show');
+                    modalConfirm.disabled = false;
+                    modalConfirm.textContent = '确认充值';
+                    pendingMonths = 0;
+                    alert('网络错误，充值失败，请重试');
+                });
+            });
+        }
+
+        function submitRefund() {
+            if (!user) {
+                if (confirm('请先登录后再申请退款，是否前往登录页面？')) {
+                    window.location.href = '/login';
+                }
+                return;
+            }
+
+            const reason = document.getElementById('refundReason').value.trim();
+            if (!reason) {
+                alert('请填写退款原因');
+                return;
+            }
+
+            if (!confirm('确认要提交退款申请吗？申请提交后将等待管理员审核，审核通过后VIP会员资格将取消。')) {
+                return;
+            }
+
+            const refundBtn = document.getElementById('refundBtn');
+            refundBtn.disabled = true;
+            refundBtn.textContent = '提交中...';
+
+            fetch('/api/user/vip/refund', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ reason: reason })
+            })
+            .then(response => response.json())
+            .then(data => {
+                refundBtn.disabled = false;
+                refundBtn.textContent = '提交退款申请';
+
+                if (data && data.code === 200) {
+                    document.getElementById('refundReason').value = '';
+                    alert('退款申请已提交，请等待管理员审核。');
+                } else {
+                    alert('提交失败：' + (data ? data.message : '未知错误'));
+                }
+            })
+            .catch(error => {
+                console.error('退款请求失败:', error);
+                refundBtn.disabled = false;
+                refundBtn.textContent = '提交退款申请';
+                alert('网络错误，退款申请失败，请重试');
+            });
+        }
+
+        // 初始化FAQ折叠功能
+        function initFAQ() {
+            const faqQuestions = document.querySelectorAll('.faq-question');
+
+            faqQuestions.forEach(question => {
+                question.addEventListener('click', function() {
+                    this.classList.toggle('active');
+                    const answer = this.nextElementSibling;
+                    answer.classList.toggle('show');
+                });
+            });
+        }
+
+        async function loadDomainDropdown() {
+            try {
+                const [catRes, subRes] = await Promise.all([
+                    fetch('/api/categories/active'),
+                    fetch('/api/subcategories/all')
+                ]);
+                const catData = await catRes.json();
+                const subData = await subRes.json();
+                if (catData.code !== 200 || subData.code !== 200) return;
+                const categories = catData.data || [];
+                const subcategories = subData.data || [];
+                const dropdown = document.getElementById('domainDropdown');
+                if (!dropdown) return;
+                categories.forEach(cat => {
+                    const catSubs = subcategories.filter(s => s.categoryId === cat.id);
+                    if (catSubs.length > 0) {
+                        const group = document.createElement('div');
+                        group.className = 'menu-group';
+                        group.textContent = cat.name;
+                        dropdown.appendChild(group);
+                    }
+                    catSubs.forEach(sub => {
+                        const a = document.createElement('a');
+                        a.href = '/learning-subdomain?id=' + sub.id;
+                        a.textContent = sub.name;
+                        dropdown.appendChild(a);
+                    });
+                });
+            } catch(e) { /* silently fail */ }
+        }
+    </script>
+</body>
+</html>

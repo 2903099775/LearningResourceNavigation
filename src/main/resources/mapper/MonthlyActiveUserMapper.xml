@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.learning.mapper.MonthlyActiveUserMapper">
+
+    <resultMap id="BaseResultMap" type="com.learning.entity.MonthlyActiveUser">
+        <id column="user_id" property="userId"/>
+        <result column="username" property="username"/>
+        <result column="avatar" property="avatar"/>
+        <result column="stat_month" property="statMonth"/>
+        <result column="post_count" property="postCount"/>
+        <result column="comment_count" property="commentCount"/>
+        <result column="total_score" property="totalScore"/>
+        <result column="rank_position" property="rankPosition"/>
+    </resultMap>
+
+    <!-- 实时获取指定月份的活跃用户排行榜（直接从posts和comments表计算） -->
+    <select id="getMonthlyRanking" resultMap="BaseResultMap">
+        SELECT
+            t.user_id,
+            t.username,
+            u.avatar,
+            #{yearMonth} as stat_month,
+            COALESCE(t.post_count, 0) as post_count,
+            COALESCE(t.comment_count, 0) as comment_count,
+            (COALESCE(t.post_count, 0) * 2 + COALESCE(t.comment_count, 0)) as total_score,
+            @cur_rank := @cur_rank + 1 AS rank_position
+        FROM (
+            SELECT
+                p.user_id,
+                u.username,
+                COUNT(DISTINCT p.id) as post_count,
+                (
+                    SELECT COUNT(*)
+                    FROM comments c
+                    WHERE c.user_id = p.user_id
+                    AND DATE_FORMAT(c.created_at, '%Y-%m') = #{yearMonth}
+                    AND c.status = 1
+                ) as comment_count
+            FROM posts p
+            LEFT JOIN users u ON p.user_id = u.id
+            WHERE DATE_FORMAT(p.created_at, '%Y-%m') = #{yearMonth}
+            AND p.status = 1
+            GROUP BY p.user_id, u.username
+
+            UNION DISTINCT
+
+            SELECT
+                c.user_id,
+                u2.username,
+                0 as post_count,
+                COUNT(*) as comment_count
+            FROM comments c
+            LEFT JOIN users u2 ON c.user_id = u2.id
+            WHERE DATE_FORMAT(c.created_at, '%Y-%m') = #{yearMonth}
+            AND c.status = 1
+            AND c.user_id NOT IN (
+                SELECT DISTINCT p2.user_id
+                FROM posts p2
+                WHERE DATE_FORMAT(p2.created_at, '%Y-%m') = #{yearMonth}
+                AND p2.status = 1
+            )
+            GROUP BY c.user_id, u2.username
+        ) t
+        LEFT JOIN users u ON t.user_id = u.id
+        CROSS JOIN (SELECT @cur_rank := 0) r
+        ORDER BY total_score DESC, post_count DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 统计并更新/插入用户的月度活跃数据（用于后台定时任务或手动刷新） -->
+    <insert id="upsertUserActivity">
+        INSERT INTO monthly_active_users (user_id, username, stat_month, post_count, comment_count, total_score, updated_at)
+        SELECT
+            p.user_id,
+            u.username,
+            #{yearMonth},
+            COUNT(DISTINCT p.id) as post_count,
+            (
+                SELECT COUNT(*)
+                FROM comments c
+                WHERE c.user_id = p.user_id
+                AND DATE_FORMAT(c.created_at, '%Y-%m') = #{yearMonth}
+                AND c.status = 1
+            ) as comment_count,
+            COUNT(DISTINCT p.id) * 2 + (
+                SELECT COUNT(*)
+                FROM comments c
+                WHERE c.user_id = p.user_id
+                AND DATE_FORMAT(c.created_at, '%Y-%m') = #{yearMonth}
+                AND c.status = 1
+            ) as total_score,
+            NOW()
+        FROM posts p
+        LEFT JOIN users u ON p.user_id = u.id
+        WHERE DATE_FORMAT(p.created_at, '%Y-%m') = #{yearMonth}
+        AND p.status = 1
+        GROUP BY p.user_id, u.username
+        ON DUPLICATE KEY UPDATE
+            post_count = VALUES(post_count),
+            comment_count = VALUES(comment_count),
+            total_score = VALUES(total_score),
+            updated_at = NOW()
+    </insert>
+
+    <!-- 获取当前月份所有用户的活跃统计数据 -->
+    <select id="getMonthlyStats" resultMap="BaseResultMap">
+        SELECT
+            mau.*,
+            u.avatar,
+            (COALESCE(mau.post_count, 0) * 2 + COALESCE(mau.comment_count, 0)) as total_score
+        FROM monthly_active_users mau
+        LEFT JOIN users u ON mau.user_id = u.id
+        WHERE mau.stat_month = #{yearMonth}
+        ORDER BY total_score DESC, post_count DESC
+    </select>
+
+</mapper>

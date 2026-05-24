@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.learning.mapper.LearningProgressMapper">
+
+    <resultMap id="BaseResultMap" type="com.learning.entity.LearningProgress">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="unit_id" property="unitId"/>
+        <result column="path_id" property="pathId"/>
+        <result column="status" property="status"/>
+        <result column="start_time" property="startTime"/>
+        <result column="complete_time" property="completeTime"/>
+        <result column="last_study_time" property="lastStudyTime"/>
+        <result column="study_duration" property="studyDuration"/>
+        <result column="visit_count" property="visitCount"/>
+        <result column="rating" property="rating"/>
+        <result column="is_favorite" property="isFavorite"/>
+    </resultMap>
+
+    <select id="findByUserAndUnit" resultMap="BaseResultMap">
+        SELECT * FROM user_progress WHERE user_id = #{userId} AND unit_id = #{unitId}
+    </select>
+
+    <select id="findByUserAndPath" resultMap="BaseResultMap">
+        SELECT * FROM user_progress WHERE user_id = #{userId} AND path_id = #{pathId}
+    </select>
+
+    <select id="findByUserId" resultMap="BaseResultMap">
+        SELECT * FROM user_progress WHERE user_id = #{userId} ORDER BY start_time DESC
+    </select>
+
+    <insert id="insert" parameterType="com.learning.entity.LearningProgress">
+        INSERT INTO user_progress (user_id, unit_id, path_id, status, start_time, last_study_time, study_duration, visit_count, rating, is_favorite)
+        VALUES (#{userId}, #{unitId}, #{pathId}, #{status}, NOW(), NOW(), #{studyDuration}, 1, #{rating}, #{isFavorite})
+    </insert>
+
+    <insert id="insertWithParams" parameterType="map">
+        INSERT INTO user_progress (user_id, unit_id, path_id, status, start_time, last_study_time, study_duration, visit_count, rating, is_favorite)
+        VALUES (#{userId}, #{unitId}, #{pathId}, #{status}, NOW(), NOW(), #{studyDuration}, 1, 0, 0)
+    </insert>
+
+    <update id="update" parameterType="com.learning.entity.LearningProgress">
+        UPDATE user_progress
+        SET status = #{status},
+            start_time = #{startTime},
+            complete_time = #{completeTime},
+            last_study_time = #{lastStudyTime},
+            study_duration = #{studyDuration}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.Long">
+        DELETE FROM user_progress WHERE id = #{id}
+    </delete>
+
+    <select id="countCompletedByPath" parameterType="java.lang.Long" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM user_progress
+        WHERE user_id = #{userId} AND path_id = #{pathId} AND status = 'COMPLETED'
+    </select>
+
+    <select id="countTotalByPath" parameterType="java.lang.Long" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM learning_units lu
+        JOIN path_stages ps ON lu.stage_id = ps.id
+        WHERE ps.path_id = #{pathId}
+    </select>
+
+    <!-- 记录学习访问：更新 last_study_time 和状态为学习中 -->
+    <update id="updateVisitTime">
+        UPDATE user_progress
+        SET last_study_time = NOW(), status = 'IN_PROGRESS', visit_count = COALESCE(visit_count, 0) + 1
+        WHERE user_id = #{userId} AND unit_id = #{unitId}
+    </update>
+
+    <!-- 累加学习时长：每次访问增加指定秒数 -->
+    <update id="incrementStudyDuration">
+        UPDATE user_progress
+        SET study_duration = COALESCE(study_duration, 0) + #{seconds}
+        WHERE user_id = #{userId} AND unit_id = #{unitId}
+    </update>
+
+    <!-- 获取用户对某单元的学习访问次数（IN_PROGRESS 或 COMPLETED 的记录数） -->
+    <select id="countVisitsByUserAndUnit" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM user_progress
+        WHERE user_id = #{userId} AND unit_id = #{unitId}
+    </select>
+
+    <!-- 获取用户总学习访问次数 -->
+    <select id="countTotalVisits" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM user_progress
+        WHERE user_id = #{userId}
+    </select>
+
+    <!-- 获取用户最近一次学习记录 -->
+    <select id="findLatestByUserId" resultMap="BaseResultMap">
+        SELECT * FROM user_progress
+        WHERE user_id = #{userId}
+        ORDER BY start_time DESC
+        LIMIT 1
+    </select>
+
+    <!-- 统计近N小时内访问某单元的去重用户数 -->
+    <select id="countRecentVisitors" resultType="java.lang.Integer">
+        SELECT COUNT(DISTINCT user_id) FROM user_progress
+        WHERE unit_id = #{unitId} AND start_time >= DATE_SUB(CURRENT_TIMESTAMP, INTERVAL #{hours} HOUR)
+    </select>
+
+    <!-- 获取近N小时内访问某单元的用户信息 -->
+    <select id="findRecentVisitors" resultType="java.util.Map">
+        SELECT u.id AS userId, u.username, u.avatar, p.start_time AS lastVisitTime
+        FROM user_progress p
+        JOIN users u ON p.user_id = u.id
+        WHERE p.unit_id = #{unitId} AND p.start_time >= DATE_SUB(CURRENT_TIMESTAMP, INTERVAL #{hours} HOUR)
+        GROUP BY p.user_id
+        ORDER BY p.start_time DESC
+        LIMIT 12
+    </select>
+
+    <!-- 更新用户评分 -->
+    <update id="updateRating">
+        UPDATE user_progress
+        SET rating = #{rating}
+        WHERE user_id = #{userId} AND unit_id = #{unitId}
+    </update>
+
+    <!-- 更新收藏状态 -->
+    <update id="updateFavorite">
+        UPDATE user_progress
+        SET is_favorite = #{isFavorite}
+        WHERE user_id = #{userId} AND unit_id = #{unitId}
+    </update>
+
+    <!-- 获取用户评分 -->
+    <select id="getRating" resultType="java.lang.Integer">
+        SELECT rating FROM user_progress
+        WHERE user_id = #{userId} AND unit_id = #{unitId}
+    </select>
+
+    <!-- 获取用户收藏状态 -->
+    <select id="getFavorite" resultType="java.lang.Integer">
+        SELECT is_favorite FROM user_progress
+        WHERE user_id = #{userId} AND unit_id = #{unitId}
+    </select>
+
+    <!-- 获取用户最近的学习记录 -->
+    <select id="findRecentLearningRecords" resultType="java.util.Map">
+        SELECT p.id, p.user_id AS userId, p.unit_id AS unitId, p.path_id AS pathId, 
+               p.status, p.start_time AS startTime, p.last_study_time AS lastStudyTime
+        FROM user_progress p
+        WHERE p.user_id = #{userId}
+        ORDER BY p.last_study_time DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 统计指定日期范围内完成的学习单元数 -->
+    <select id="countCompletedUnitsByDateRange" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM user_progress
+        WHERE status = 'COMPLETED' 
+        AND complete_time >= #{startDate} 
+        AND complete_time &lt; #{endDate}
+    </select>
+
+    <!-- 统计指定日期范围内的学习进度更新数 -->
+    <select id="countProgressUpdatesByDateRange" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM user_progress
+        WHERE last_study_time >= #{startDate} 
+        AND last_study_time &lt; #{endDate}
+    </select>
+
+    <!-- 统计各学习路线的学习人数（显示所有已发布路线） -->
+    <select id="countUsersByPath" resultType="java.util.Map">
+        SELECT lp.title, COUNT(DISTINCT p.user_id) AS user_count
+        FROM learning_paths lp
+        LEFT JOIN user_progress p ON lp.id = p.path_id
+        WHERE lp.status = 'PUBLISHED'
+        GROUP BY lp.id, lp.title
+        ORDER BY user_count DESC
+    </select>
+
+    <!-- 获取用户过去7天每日学习时长统计 -->
+    <select id="getDailyStudyDuration" resultType="java.util.Map">
+        SELECT 
+            DATE(last_study_time) AS study_date,
+            COALESCE(SUM(study_duration), 0) AS total_duration
+        FROM user_progress
+        WHERE user_id = #{userId}
+          AND last_study_time >= DATE_SUB(CURRENT_DATE, INTERVAL 6 DAY)
+          AND last_study_time &lt;= CURRENT_TIMESTAMP
+        GROUP BY DATE(last_study_time)
+        ORDER BY study_date ASC
+    </select>
+
+    <!-- 获取用户过去7天每日学习次数统计 -->
+    <select id="getDailyStudyCount" resultType="java.util.Map">
+        SELECT
+            DATE(last_study_time) AS study_date,
+            COUNT(*) AS study_count
+        FROM user_progress
+        WHERE user_id = #{userId}
+          AND last_study_time >= DATE_SUB(CURRENT_DATE, INTERVAL 6 DAY)
+          AND last_study_time &lt;= CURRENT_TIMESTAMP
+        GROUP BY DATE(last_study_time)
+        ORDER BY study_date ASC
+    </select>
+
+    <!-- 获取用户已完成单元总数 -->
+    <select id="countCompletedUnitsByUser" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM user_progress
+        WHERE user_id = #{userId} AND status = 'COMPLETED'
+    </select>
+
+    <!-- 获取用户总学习次数 -->
+    <select id="countTotalVisitsByUser" resultType="java.lang.Integer">
+        SELECT COALESCE(SUM(visit_count), 0) FROM user_progress
+        WHERE user_id = #{userId}
+    </select>
+
+    <!-- 获取用户总学习时长（秒） -->
+    <select id="getTotalStudyDuration" resultType="java.lang.Integer">
+        SELECT COALESCE(SUM(study_duration), 0) FROM user_progress
+        WHERE user_id = #{userId}
+    </select>
+
+    <!-- 获取用户已完成路线数 -->
+    <select id="countCompletedPathsByUser" resultType="java.lang.Integer">
+        SELECT COUNT(DISTINCT path_id) FROM user_progress
+        WHERE user_id = #{userId} AND path_id IS NOT NULL AND path_id > 0 AND status = 'COMPLETED'
+    </select>
+
+    <!-- 获取用户学习日期列表（用于计算连续学习天数） -->
+    <select id="getStudyDatesByUserId" resultType="java.time.LocalDateTime">
+        SELECT last_study_time FROM user_progress
+        WHERE user_id = #{userId}
+        ORDER BY last_study_time DESC
+    </select>
+
+    <select id="countProgressGroupByDate" resultType="java.util.Map">
+        SELECT DATE(last_study_time) AS activity_date, COUNT(*) AS activity_count
+        FROM user_progress
+        WHERE last_study_time >= #{startDate} AND last_study_time &lt; #{endDate}
+        GROUP BY DATE(last_study_time)
+        ORDER BY activity_date ASC
+    </select>
+
+</mapper>

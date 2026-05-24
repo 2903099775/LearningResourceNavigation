@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.learning.mapper.LearningSubcategoryMapper">
+
+    <resultMap id="BaseResultMap" type="com.learning.entity.LearningSubcategory">
+        <id column="id" property="id"/>
+        <result column="category_id" property="categoryId"/>
+        <result column="name" property="name"/>
+        <result column="description" property="description"/>
+        <result column="icon" property="icon"/>
+        <result column="cover_image" property="coverImage"/>
+        <result column="sort_order" property="sortOrder"/>
+        <result column="status" property="status"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <resultMap id="WithCategoryResultMap" type="com.learning.entity.LearningSubcategory" extends="BaseResultMap">
+        <association property="category" javaType="com.learning.entity.LearningCategory">
+            <id column="cat_id" property="id"/>
+            <result column="cat_name" property="name"/>
+            <result column="cat_description" property="description"/>
+            <result column="cat_icon" property="icon"/>
+        </association>
+    </resultMap>
+
+    <resultMap id="WithPathCountResultMap" type="com.learning.entity.LearningSubcategory" extends="BaseResultMap">
+        <result column="path_count" property="pathCount"/>
+    </resultMap>
+
+    <select id="selectById" parameterType="java.lang.Long" resultMap="WithCategoryResultMap">
+        SELECT ls.*,
+               lc.id as cat_id, lc.name as cat_name, lc.description as cat_description, lc.icon as cat_icon
+        FROM learning_subcategories ls
+        LEFT JOIN learning_categories lc ON ls.category_id = lc.id
+        WHERE ls.id = #{id}
+    </select>
+
+    <select id="selectAll" resultMap="WithCategoryResultMap">
+        SELECT ls.*,
+               lc.id as cat_id, lc.name as cat_name, lc.description as cat_description, lc.icon as cat_icon
+        FROM learning_subcategories ls
+        LEFT JOIN learning_categories lc ON ls.category_id = lc.id
+        ORDER BY ls.sort_order ASC
+    </select>
+
+    <select id="selectByStatus" resultMap="BaseResultMap">
+        SELECT * FROM learning_subcategories
+        WHERE status = #{status}
+        ORDER BY sort_order ASC
+    </select>
+
+    <select id="selectByCategoryId" parameterType="java.lang.Long" resultMap="WithCategoryResultMap">
+        SELECT ls.*,
+               lc.id as cat_id, lc.name as cat_name, lc.description as cat_description, lc.icon as cat_icon
+        FROM learning_subcategories ls
+        LEFT JOIN learning_categories lc ON ls.category_id = lc.id
+        WHERE ls.category_id = #{categoryId}
+        ORDER BY ls.sort_order ASC
+    </select>
+
+    <select id="selectActiveByCategoryId" parameterType="java.lang.Long" resultMap="WithPathCountResultMap">
+        SELECT ls.*,
+               (SELECT COUNT(*) FROM learning_paths lp WHERE lp.subcategory_id = ls.id AND lp.status = 'PUBLISHED') as path_count
+        FROM learning_subcategories ls
+        WHERE ls.category_id = #{categoryId} AND ls.status = 1
+        ORDER BY ls.sort_order ASC
+    </select>
+
+    <insert id="insert" parameterType="com.learning.entity.LearningSubcategory" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO learning_subcategories (category_id, name, description, icon, cover_image, sort_order, status, created_at, updated_at)
+        VALUES (#{categoryId}, #{name}, #{description}, #{icon}, #{coverImage}, #{sortOrder}, #{status}, #{createdAt}, #{updatedAt})
+    </insert>
+
+    <update id="update" parameterType="com.learning.entity.LearningSubcategory">
+        UPDATE learning_subcategories
+        SET category_id = #{categoryId},
+            name = #{name},
+            description = #{description},
+            icon = #{icon},
+            cover_image = #{coverImage},
+            sort_order = #{sortOrder},
+            status = #{status},
+            updated_at = #{updatedAt}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById" parameterType="java.lang.Long">
+        DELETE FROM learning_subcategories WHERE id = #{id}
+    </delete>
+
+</mapper>

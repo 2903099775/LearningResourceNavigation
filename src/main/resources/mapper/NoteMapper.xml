@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.learning.mapper.NoteMapper">
+
+    <resultMap id="BaseResultMap" type="com.learning.entity.Note">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="unit_id" property="unitId"/>
+        <result column="path_id" property="pathId"/>
+        <result column="title" property="title"/>
+        <result column="content" property="content"/>
+        <result column="is_favorite" property="isFavorite"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <select id="findByUserId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT * FROM user_notes WHERE user_id = #{userId} ORDER BY created_at DESC
+    </select>
+
+    <select id="findByUnitId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT * FROM user_notes WHERE unit_id = #{unitId} ORDER BY created_at DESC
+    </select>
+
+    <select id="findById" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT * FROM user_notes WHERE id = #{id}
+    </select>
+
+    <insert id="insert" parameterType="com.learning.entity.Note" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO user_notes (user_id, unit_id, path_id, title, content, is_favorite, created_at, updated_at)
+        VALUES (#{userId}, #{unitId}, #{pathId}, #{title}, #{content},
+                #{isFavorite, jdbcType=INTEGER},
+                #{createdAt}, #{updatedAt})
+    </insert>
+
+    <update id="update" parameterType="com.learning.entity.Note">
+        UPDATE user_notes
+        SET title = #{title},
+            content = #{content},
+            is_favorite = #{isFavorite, jdbcType=INTEGER},
+            updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.Long">
+        DELETE FROM user_notes WHERE id = #{id}
+    </delete>
+
+    <select id="findByUserIdAndUnitId" resultMap="BaseResultMap">
+        SELECT * FROM user_notes WHERE user_id = #{userId} AND unit_id = #{unitId} ORDER BY created_at DESC
+    </select>
+
+    <select id="countByUserId" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM user_notes WHERE user_id = #{userId}
+    </select>
+
+</mapper>

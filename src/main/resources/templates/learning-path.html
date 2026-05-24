@@ -1,0 +1,1587 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Java后端开发路线 - 学习资源导航系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        header {
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #007bff;
+            text-decoration: none;
+            line-height: 1.5;
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+            margin: 0;
+            padding: 0;
+            align-items: center;
+        }
+        
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        
+        .nav-links a:hover {
+            color: #007bff;
+        }
+        
+        .nav-links .dropdown { position: relative; }
+        .nav-links .dropdown-toggle { cursor: pointer; display: flex; align-items: center; gap: 4px; }
+        .nav-links .dropdown-toggle::after { content: '\25BC'; font-size: 0.6em; transition: transform 0.3s; }
+        .nav-links .dropdown:hover .dropdown-toggle::after { transform: rotate(180deg); }
+        .nav-links .dropdown-menu { display: none; position: absolute; top: 100%; left: -1rem; background: #fff; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); min-width: 180px; padding: 0.5rem 0; z-index: 1001; }
+        .nav-links .dropdown:hover .dropdown-menu { display: block; }
+        .nav-links .dropdown-menu a { display: block; padding: 0.6rem 1.2rem; color: #333; white-space: nowrap; border-radius: 4px; margin: 0 0.3rem; text-decoration: none; }
+        .nav-links .dropdown-menu a:hover { background: #f0f7ff; color: #007bff; }
+        .nav-links .dropdown-menu .menu-group { padding: 0.3rem 1.2rem 0.1rem; font-size: 0.75rem; color: #999; font-weight: 600; }
+        
+        .search-box {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        
+        .search-box input {
+            padding: 0.5rem 1rem;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            outline: none;
+            width: 300px;
+            line-height: 1.5;
+        }
+        
+        .auth-buttons {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .user-menu {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #007bff;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            transition: all 0.3s;
+            line-height: 1;
+        }
+
+        .user-avatar:hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
+        }
+
+        .user-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 0.5rem;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            min-width: 200px;
+            z-index: 1001;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s;
+        }
+
+        .user-menu:hover .user-dropdown {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .user-dropdown-content {
+            padding: 1rem;
+        }
+
+        .user-info {
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 1rem;
+        }
+
+        .user-name {
+            font-weight: bold;
+            margin-bottom: 0.25rem;
+        }
+
+        .user-email {
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        .dropdown-menu {
+            list-style: none;
+        }
+
+        .dropdown-menu li {
+            margin-bottom: 0.5rem;
+        }
+
+        .dropdown-menu li:last-child {
+            margin-bottom: 0;
+        }
+
+        .dropdown-menu a {
+            display: block;
+            padding: 0.5rem;
+            text-decoration: none;
+            color: #333;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .dropdown-menu a:hover {
+            background-color: #f8f9fa;
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background-color: #eee;
+            margin: 0.75rem 0;
+        }
+        
+        .breadcrumb {
+            background-color: #f8f9fa;
+            padding: 1rem 0;
+            margin-bottom: 2rem;
+        }
+        
+        .breadcrumb a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        
+        .breadcrumb span {
+            color: #666;
+            margin: 0 0.5rem;
+        }
+        
+        .path-header {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .path-title {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+        
+        .path-description {
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+        
+        .path-meta {
+            display: flex;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            font-size: 0.9rem;
+        }
+        
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .difficulty {
+            color: #ff6b6b;
+        }
+        
+        .duration {
+            color: #28a745;
+        }
+        
+        .learners {
+            color: #007bff;
+        }
+        
+        .path-actions {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s;
+            line-height: 1.5;
+        }
+        
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+        
+        .btn-outline {
+            background-color: transparent;
+            color: #007bff;
+            border: 1px solid #007bff;
+        }
+        
+        .btn-outline:hover {
+            background-color: #007bff;
+            color: white;
+        }
+        
+        .progress-section {
+            margin-bottom: 2rem;
+        }
+        
+        .progress-label {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: #007bff;
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+        
+        .progress-text {
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 0.5rem;
+        }
+        
+        .units-section {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 2rem;
+        }
+        
+        .unit {
+            margin-bottom: 2rem;
+            border-bottom: 1px solid #e9ecef;
+            padding-bottom: 2rem;
+        }
+        
+        .unit:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .unit-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .unit-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .unit-meta {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .resources-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .resource-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            transition: all 0.3s;
+        }
+        
+        .resource-item:hover {
+            background-color: #e9ecef;
+        }
+        
+        .resource-status {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        .status-completed {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .status-in-progress {
+            background-color: #ffc107;
+            color: #333;
+        }
+        
+        .status-not-started {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        .resource-content {
+            flex: 1;
+        }
+        
+        .resource-title {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+        
+        .resource-meta {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.8rem;
+            color: #666;
+        }
+        
+        .resource-type {
+            background-color: #e3f2fd;
+            color: #1976d2;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+        }
+        
+        .resource-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
+        }
+        
+        .btn-success {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background-color: #218838;
+        }
+        
+        .btn-info {
+            background-color: #17a2b8;
+            color: white;
+        }
+        
+        .btn-info:hover {
+            background-color: #138496;
+        }
+        
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+        
+        footer {
+            border-top: 1px solid #eaeaea;
+            padding: 2rem 0;
+            margin-top: 4rem;
+            text-align: center;
+            background-color: #fff;
+        }
+
+        .footer-copy {
+            color: #999;
+            font-size: 0.85rem;
+            margin: 0;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 4rem;
+            color: #666;
+        }
+        
+        .error {
+            text-align: center;
+            padding: 4rem;
+            color: #dc3545;
+        }
+        
+
+    </style>
+    <script th:src="@{/js/auth.js}"></script>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <nav>
+                <a href="/" class="logo">学习资源导航</a>
+                <ul class="nav-links">
+                    <li><a href="/">首页</a></li>
+                    <li class="dropdown">
+                        <a href="/learning-domains" class="dropdown-toggle">学习领域</a>
+                        <div class="dropdown-menu" id="domainDropdown"></div>
+                    </li>
+                    <li><a href="/learning-path">学习路线</a></li>
+                    <li><a href="/community">社区</a></li>
+                </ul>
+                <div class="search-box">
+                    <input type="text" placeholder="搜索学习资源...">
+                </div>
+                <div class="auth-buttons">
+                    <div class="user-menu" id="userMenu">
+                        <div class="user-avatar" id="userAvatar">?</div>
+                        <div class="user-dropdown">
+                            <div class="user-dropdown-content">
+                                <div class="user-info" id="userInfo">
+                                    <div class="user-name">游客</div>
+                                    <div class="user-email">未登录</div>
+                                </div>
+                                <ul class="dropdown-menu" id="dropdownMenu">
+                                    <li><a href="/login" id="loginBtn">登录</a></li>
+                                    <li><a href="/register">注册</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <!-- 路线列表视图（无id参数时显示） -->
+        <div id="pathListView" style="display:none;">
+            <div class="breadcrumb">
+                <div class="container">
+                    <a href="/">首页</a>
+                    <span>></span>
+                    <a href="/learning-domains">学习领域</a>
+                    <span>></span>
+                    <span>学习路线</span>
+                </div>
+            </div>
+            <div class="container" style="padding-top: 2rem; padding-bottom: 3rem;">
+                <h1 style="font-size: 1.8rem; margin-bottom: 0.5rem; color: #333;">📚 全部学习路线</h1>
+                <p style="color: #888; margin-bottom: 2rem;">选择一条路线开始你的学习之旅</p>
+                <div id="pathListContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1.5rem;">
+                    <div class="loading">加载中...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 路线详情视图（有id参数时显示） -->
+        <div id="pathDetailView">
+        <div class="breadcrumb">
+            <div class="container">
+                <a href="/">首页</a>
+                <span>></span>
+                <a href="/learning-domains">学习领域</a>
+                <span>></span>
+                <span id="breadcrumbCategory" style="display:none;"><a href="#" id="breadcrumbCategoryLink"></a></span>
+                <span id="breadcrumbCategorySep" style="display:none;">></span>
+                <span id="breadcrumbSubcategory" style="display:none;"><a href="#" id="breadcrumbSubcategoryLink"></a></span>
+                <span id="breadcrumbSubcategorySep" style="display:none;">></span>
+                <span id="pathName">Java后端开发路线</span>
+            </div>
+        </div>
+
+        <div class="container">
+            <section class="path-header">
+                <h1 class="path-title" id="pathTitle">Java后端开发学习路线</h1>
+                <p class="path-description" id="pathDescription">
+                    从零基础到Java高级工程师的完整学习路径，涵盖Java基础、Web开发、框架应用等核心内容。
+                    本路线设计科学合理，循序渐进，帮助你系统掌握Java开发技能。
+                </p>
+                <div class="path-meta">
+                    <div class="meta-item">
+                        <span class="difficulty" id="pathDifficulty">⭐⭐⭐⭐</span>
+                        <span id="difficultyText">难度：中等偏上</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="duration">⏱️</span>
+                        <span id="pathDuration">预计时长：6个月</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="learners">👥</span>
+                        <span id="pathLearners">学习人数：2,358</span>
+                    </div>
+                </div>
+                <div class="path-actions">
+                    <button class="btn btn-primary" id="startLearningBtn">
+                        <span>▶️</span>
+                        开始学习
+                    </button>
+                    <button class="btn btn-outline" id="favoriteBtn">
+                        <span>❤️</span>
+                        收藏路线
+                    </button>
+                    <button class="btn btn-outline" id="shareBtn">
+                        <span>🔗</span>
+                        分享
+                    </button>
+                </div>
+                <div class="progress-section">
+                    <div class="progress-label">你的进度</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill" style="width: 35%"></div>
+                    </div>
+                    <div class="progress-text" id="progressText">35% 完成 (23/65 单元已完成)</div>
+                </div>
+            </section>
+
+            <section class="units-section">
+                <h2 style="margin-bottom: 2rem; color: #333;">学习阶段</h2>
+                <div id="unitsContainer">
+                    <div class="loading">加载中...</div>
+                </div>
+            </section>
+
+            <section class="comments-section" style="background-color: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); padding: 2rem; margin-top: 2rem;">
+                <h2 style="margin-bottom: 2rem; color: #333;">💬 路线讨论区</h2>
+                
+                <div style="margin-bottom: 2rem;">
+                    <textarea style="width: 100%; min-height: 100px; padding: 1rem; border: 1px solid #ddd; border-radius: 6px; resize: vertical;" id="commentText" placeholder="分享你的学习心得..."></textarea>
+                    <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1rem;">
+                        <button class="btn btn-outline" id="cancelCommentBtn">取消</button>
+                        <button class="btn btn-primary" id="submitCommentBtn">发表评论</button>
+                    </div>
+                </div>
+
+                <div class="comments-list" id="commentsList">
+                    <div style="border: 1px solid #eee; border-radius: 6px; padding: 1.5rem; margin-bottom: 1rem;">
+                        <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 1rem;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <div class="user-avatar" style="width: 32px; height: 32px; font-size: 0.8rem;">U</div>
+                                <div>
+                                    <div style="font-weight: 500;">user123</div>
+                                    <div style="font-size: 0.8rem; color: #666;">2024-01-20 15:30</div>
+                                </div>
+                            </div>
+                            <div style="color: #ff6b6b;">⭐⭐⭐⭐⭐</div>
+                        </div>
+                        <p style="margin-bottom: 1rem;">非常好的学习路线，内容很全面！跟着学习收获很大。</p>
+                        <div style="display: flex; gap: 1rem; font-size: 0.8rem;">
+                            <button style="background: none; border: none; color: #007bff; cursor: pointer;" class="likeBtn">❤️ 点赞 (12)</button>
+                            <button style="background: none; border: none; color: #666; cursor: pointer;" class="replyBtn">💬 回复</button>
+                        </div>
+                    </div>
+
+                    <div style="border: 1px solid #eee; border-radius: 6px; padding: 1.5rem; margin-bottom: 1rem;">
+                        <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 1rem;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <div class="user-avatar" style="width: 32px; height: 32px; font-size: 0.8rem;">V</div>
+                                <div>
+                                    <div style="font-weight: 500;">vip456</div>
+                                    <div style="font-size: 0.8rem; color: #666;">2024-01-20 14:20</div>
+                                </div>
+                            </div>
+                            <div style="color: #ff6b6b;">⭐⭐⭐⭐</div>
+                        </div>
+                        <p style="margin-bottom: 1rem;">资源质量不错，讲解很详细，希望能增加更多实战项目。</p>
+                        <div style="display: flex; gap: 1rem; font-size: 0.8rem;">
+                            <button style="background: none; border: none; color: #007bff; cursor: pointer;" class="likeBtn">❤️ 点赞 (8)</button>
+                            <button style="background: none; border: none; color: #666; cursor: pointer;" class="replyBtn">💬 回复</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+        </div><!-- /pathDetailView -->
+    </main>
+
+    <footer>
+        <div class="container">
+            <p class="footer-copy">&copy; 2026 学习资源导航系统</p>
+        </div>
+    </footer>
+
+    <script>
+        // 全局变量
+        let user = null;
+        let token = localStorage.getItem('token');
+        let pathId = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // 从URL获取路径ID
+            const urlParams = new URLSearchParams(window.location.search);
+            pathId = urlParams.get('id');
+            
+            // 检查用户登录状态
+            checkLoginStatus();
+            
+            if (!pathId) {
+                // 没有id参数，显示路线列表
+                document.getElementById('pathListView').style.display = '';
+                document.getElementById('pathDetailView').style.display = 'none';
+                loadPathList();
+                return;
+            }
+            
+            // 有id参数，显示路线详情
+            document.getElementById('pathListView').style.display = 'none';
+            document.getElementById('pathDetailView').style.display = '';
+
+            // 保存当前路线ID到全局变量（用于收藏状态初始化）
+            window.currentPathId = pathId;
+
+            // 加载路线详情
+            loadPathDetails(pathId);
+            
+            // 加载路线进度
+            loadPathProgress(pathId);
+            
+            // 加载路线单元
+            loadPathUnits(pathId);
+
+            // 加载收藏状态（在单元渲染完成后）
+            setTimeout(() => {
+                loadFavoriteButtonsStatus();
+            }, 500);
+
+            // 加载评论
+            loadComments(pathId);
+            
+            // 开始学习按钮
+            document.getElementById('startLearningBtn').addEventListener('click', function() {
+                // 跳转到第一个未完成的单元
+                window.location.href = '/learning-unit?id=' + pathId + '&unit=1';
+            });
+
+            // 收藏按钮
+            document.getElementById('favoriteBtn').addEventListener('click', function() {
+                togglePathFavorite(pathId, this);
+            });
+
+            // 分享按钮
+            document.getElementById('shareBtn').addEventListener('click', function() {
+                if (navigator.share) {
+                    const pathTitle = document.getElementById('pathTitle').textContent;
+                    navigator.share({
+                        title: pathTitle,
+                        text: document.getElementById('pathDescription').textContent,
+                        url: window.location.href
+                    });
+                } else {
+                    // 复制链接到剪贴板
+                    navigator.clipboard.writeText(window.location.href).then(function() {
+                        alert('链接已复制到剪贴板！');
+                    });
+                }
+            });
+
+            // 发表评论按钮
+            document.getElementById('submitCommentBtn').addEventListener('click', function() {
+                const commentText = document.getElementById('commentText').value.trim();
+                if (commentText) {
+                    submitComment(pathId, commentText);
+                } else {
+                    alert('请输入评论内容！');
+                }
+            });
+
+            // 取消评论按钮
+            document.getElementById('cancelCommentBtn').addEventListener('click', function() {
+                document.getElementById('commentText').value = '';
+            });
+        });
+
+        // 检查登录状态（通过后端验证token有效性）
+        function checkLoginStatus() {
+            if (token) {
+                return fetch('/api/user/profile', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                })
+                .then(response => {
+                    // 只在认证失败时清除token，其他错误不清
+                    if (response.status === 401 || response.status === 403) {
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('user');
+                        token = null;
+                        user = null;
+                        return null;
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data && data.code === 200) {
+                        user = data.data;
+                        localStorage.setItem('user', JSON.stringify(user));
+                    }
+                    // 非200的code不清token（可能是服务端临时错误）
+                    updateUserMenu();
+                })
+                .catch(error => {
+                    console.error('验证登录状态失败:', error);
+                    // 网络错误不清token，等下次重试
+                    updateUserMenu();
+                });
+            }
+            updateUserMenu();
+            return Promise.resolve();
+        }
+
+        // 更新用户菜单
+        function updateUserMenu() {
+            const userAvatar = document.getElementById('userAvatar');
+            const userInfo = document.getElementById('userInfo');
+            const dropdownMenu = document.getElementById('dropdownMenu');
+
+            if (user) {
+                if (user.avatar) {
+                    userAvatar.innerHTML = `<img src="${user.avatar + (user.avatar.includes('?') ? '&' : '?') + 't=' + Date.now()}" alt="${user.username}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+                } else {
+                    userAvatar.textContent = user.username.charAt(0).toUpperCase();
+                }
+                const isVip = user.vipExpireDate && new Date(user.vipExpireDate) > new Date();
+                userInfo.innerHTML = `
+                    <div class="user-name">${user.username}${isVip ? ' <span style="background:linear-gradient(135deg,#f5af19,#f12711);color:#fff;padding:2px 8px;border-radius:10px;font-size:12px;font-weight:bold;margin-left:6px;">VIP</span>' : ''}</div>
+                    <div class="user-email">${user.email}</div>
+                `;
+                dropdownMenu.innerHTML = `
+                    <li><a href="/profile">个人中心</a></li>
+                    <li><a href="#">我的学习</a></li>
+                    <li><a href="#">我的收藏</a></li>
+                    <div class="dropdown-divider"></div>
+                    <li><a href="#" id="logoutBtn">退出登录</a></li>
+                `;
+                document.getElementById('logoutBtn').addEventListener('click', function(e) {
+                    e.preventDefault();
+                    localStorage.removeItem('token');
+                    token = null;
+                    user = null;
+                    updateUserMenu();
+                    alert('已退出登录');
+                });
+            } else {
+                userAvatar.textContent = '?';
+                userInfo.innerHTML = `
+                    <div class="user-name">游客</div>
+                    <div class="user-email">未登录</div>
+                `;
+                dropdownMenu.innerHTML = `
+                    <li><a href="/login" id="loginBtn">登录</a></li>
+                    <li><a href="/register">注册</a></li>
+                `;
+            }
+        }
+
+        // 加载路线详情
+        // 加载路线列表
+        function loadPathList() {
+            fetch('/api/paths')
+                .then(response => response.json())
+                .then(result => {
+                    const container = document.getElementById('pathListContainer');
+                    if (result.code === 200 && result.data) {
+                        const paths = result.data;
+                        if (!paths || paths.length === 0) {
+                            container.innerHTML = '<p style="color: #999; grid-column: 1/-1; text-align: center; padding: 3rem;">暂无学习路线</p>';
+                            return;
+                        }
+                        const difficultyMap = { 'BEGINNER': '⭐⭐', 'INTERMEDIATE': '⭐⭐⭐', 'ADVANCED': '⭐⭐⭐⭐' };
+                        const difficultyText = { 'BEGINNER': '初级', 'INTERMEDIATE': '中级', 'ADVANCED': '高级' };
+                        container.innerHTML = paths.map(p => `
+                            <div onclick="window.location.href='/learning-path?id=${p.id}'" style="background: #fff; border-radius: 12px; padding: 1.5rem; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.08);" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 6px 20px rgba(0,0,0,0.12)'" onmouseout="this.style.transform='';this.style.boxShadow='0 2px 8px rgba(0,0,0,0.08)'">
+                                <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem; color: #333;">${p.title || '未命名路线'}</h3>
+                                <p style="color: #777; font-size: 0.9rem; margin-bottom: 1rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${p.description || ''}</p>
+                                <div style="display: flex; gap: 1rem; font-size: 0.85rem; color: #999;">
+                                    <span>${difficultyMap[p.difficulty] || '⭐⭐⭐'} ${difficultyText[p.difficulty] || '中级'}</span>
+                                    <span>⏱️ ${p.durationWeeks ? p.durationWeeks + '周' : '暂无'}</span>
+                                </div>
+                            </div>
+                        `).join('');
+                    } else {
+                        container.innerHTML = '<p style="color: #999; grid-column: 1/-1; text-align: center; padding: 3rem;">加载失败，请刷新重试</p>';
+                    }
+                })
+                .catch(error => {
+                    console.error('加载路线列表失败:', error);
+                    document.getElementById('pathListContainer').innerHTML = '<p style="color: #e74c3c; grid-column: 1/-1; text-align: center; padding: 3rem;">加载失败</p>';
+                });
+        }
+
+        function loadPathDetails(pathId) {
+            fetch(`/api/paths/${pathId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.code === 200) {
+                        const path = data.data;
+                        document.getElementById('pathTitle').textContent = path.title;
+                        document.getElementById('pathName').textContent = path.title;
+                        document.getElementById('pathDescription').textContent = path.description;
+                        document.getElementById('pathDuration').textContent = `预计时长：${path.durationWeeks}周`;
+                        document.getElementById('pathLearners').textContent = `学习人数：${path.learnersCount || 0}`;
+
+                        // 更新面包屑导航：领域→子领域→学习路线
+                        if (path.subcategory) {
+                            const sub = path.subcategory;
+                            if (sub.category) {
+                                document.getElementById('breadcrumbCategoryLink').textContent = sub.category.name;
+                                document.getElementById('breadcrumbCategoryLink').href = '/learning-domains';
+                                document.getElementById('breadcrumbCategory').style.display = '';
+                                document.getElementById('breadcrumbCategorySep').style.display = '';
+                            }
+                            document.getElementById('breadcrumbSubcategoryLink').textContent = sub.name;
+                            document.getElementById('breadcrumbSubcategoryLink').href = '/learning-subdomain?id=' + sub.id;
+                            document.getElementById('breadcrumbSubcategory').style.display = '';
+                            document.getElementById('breadcrumbSubcategorySep').style.display = '';
+                        }
+                        
+                        // 显示难度
+                        const difficultyMap = {
+                            'BEGINNER': '⭐⭐⭐',
+                            'INTERMEDIATE': '⭐⭐⭐⭐',
+                            'ADVANCED': '⭐⭐⭐⭐⭐'
+                        };
+                        const difficultyTextMap = {
+                            'BEGINNER': '难度：初级',
+                            'INTERMEDIATE': '难度：中级',
+                            'ADVANCED': '难度：高级'
+                        };
+                        document.getElementById('pathDifficulty').textContent = difficultyMap[path.difficulty] || '⭐⭐⭐';
+                        document.getElementById('difficultyText').textContent = difficultyTextMap[path.difficulty] || '难度：中级';
+                    } else if (data.code === 404 || data.message === '路线不存在') {
+                        // 路线不存在，显示错误
+                        showPathNotFoundError();
+                    } else {
+                        console.error('加载路线详情失败:', data.message);
+                        document.getElementById('pathTitle').textContent = '加载失败';
+                        document.getElementById('pathDescription').textContent = '无法加载路线详情，请刷新页面重试';
+                    }
+                })
+                .catch(error => {
+                    console.error('加载路线详情失败:', error);
+                    document.getElementById('pathTitle').textContent = '加载失败';
+                    document.getElementById('pathDescription').textContent = '无法加载路线详情，请刷新页面重试';
+                });
+        }
+
+        // 加载路线进度
+        function loadPathProgress(pathId) {
+            if (!token) return;
+            
+            fetch(`/api/paths/${pathId}/progress`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.code === 200) {
+                    const progress = data.data;
+                    const completionRate = progress.completionRate || '0%';
+                    const rateValue = parseFloat(completionRate);
+                    document.getElementById('progressFill').style.width = `${rateValue}%`;
+                    document.getElementById('progressText').textContent = `${completionRate} 完成 (${progress.completedUnits}/${progress.totalUnits} 单元已完成)`;
+                } else if (data.code === 404 || data.message === '路线不存在') {
+                    // 路线不存在，显示错误
+                    showPathNotFoundError();
+                }
+            })
+            .catch(error => {
+                console.error('加载路线进度失败:', error);
+            });
+        }
+
+        // 加载路线单元
+        function loadPathUnits(pathId) {
+            fetch(`/api/paths/${pathId}/stages`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.code === 200) {
+                        const stages = data.data;
+                        if (stages && stages.length > 0) {
+                            renderUnits(stages);
+                        } else {
+                            document.getElementById('unitsContainer').innerHTML = '<div class="error">该路线暂无学习阶段</div>';
+                        }
+                    } else if (data.code === 404 || data.message === '路线不存在') {
+                        // 路线不存在，显示错误
+                        showPathNotFoundError();
+                    } else {
+                        console.error('加载路线单元失败:', data.message);
+                        document.getElementById('unitsContainer').innerHTML = '<div class="error">加载失败，请刷新页面重试</div>';
+                    }
+                })
+                .catch(error => {
+                    console.error('加载路线单元失败:', error);
+                    document.getElementById('unitsContainer').innerHTML = '<div class="error">加载失败，请刷新页面重试</div>';
+                });
+        }
+
+        // 显示路线不存在错误
+        function showPathNotFoundError() {
+            // 显示错误信息
+            document.getElementById('pathTitle').textContent = '路线不存在';
+            document.getElementById('pathDescription').textContent = '该学习路线不存在或已被删除';
+            document.getElementById('pathDuration').textContent = '预计时长：未知';
+            document.getElementById('pathLearners').textContent = '学习人数：0';
+            document.getElementById('pathDifficulty').textContent = '⭐⭐⭐';
+            document.getElementById('difficultyText').textContent = '难度：未知';
+            
+            // 隐藏进度条和操作按钮
+            document.querySelector('.path-actions').style.display = 'none';
+            document.querySelector('.progress-section').style.display = 'none';
+            
+            // 显示错误信息在单元容器
+            document.getElementById('unitsContainer').innerHTML = `
+                <div class="error" style="text-align: center; padding: 4rem;">
+                    <h3 style="margin-bottom: 1rem;">路线不存在</h3>
+                    <p>该学习路线不存在或已被删除</p>
+                    <button class="btn btn-primary" onclick="window.location.href='/learning-path'" style="margin-top: 1.5rem;">
+                        返回路线列表
+                    </button>
+                </div>
+            `;
+            
+            // 隐藏评论区
+            document.querySelector('.comments-section').style.display = 'none';
+        }
+
+        // 渲染学习单元
+        function renderUnits(stages) {
+            const container = document.getElementById('unitsContainer');
+            
+            if (!stages || stages.length === 0) {
+                container.innerHTML = '<div class="error">暂无学习阶段</div>';
+                return;
+            }
+
+            let html = '';
+            
+            // 遍历每个阶段
+            stages.forEach((stage, stageIndex) => {
+                html += `
+                    <div class="unit">
+                        <div class="unit-header">
+                            <h3 class="unit-title">${stageIndex + 1}. ${stage.title || '未命名阶段'}</h3>
+                            <span class="unit-meta">${stage.units ? stage.units.length : 0}个资源 | 预计${stage.durationDays || 0}天</span>
+                        </div>
+                        <div class="resources-list">
+                `;
+
+                // 遍历阶段内的单元
+                if (stage.units && stage.units.length > 0) {
+                    stage.units.forEach((unit, unitIndex) => {
+                        const statusClass = unit.status === 'COMPLETED' ? 'status-completed' : 
+                                         unit.status === 'IN_PROGRESS' ? 'status-in-progress' : 'status-not-started';
+                        const statusIcon = unit.status === 'COMPLETED' ? '✅' : 
+                                         unit.status === 'IN_PROGRESS' ? '🔄' : '⏳';
+                        const completeButtonText = unit.status === 'COMPLETED' ? '已完成' : '标记完成';
+
+                        html += `
+                            <div class="resource-item" data-unit-id="${unit.id}">
+                                <div class="resource-status ${statusClass}">${statusIcon}</div>
+                                <div class="resource-content">
+                                    <div class="resource-title">${unitIndex + 1}. ${unit.title || '未命名单元'}</div>
+                                    <div class="resource-meta">
+                                        <span class="resource-type">${unit.type || '未知'}</span>
+                                        <span>${unit.durationMinutes || 0}分钟</span>
+                                        <span>${unit.platform || '未知平台'}</span>
+                                        <span>${unit.author || '未知作者'}</span>
+                                    </div>
+                                    <p style="margin-top: 0.5rem; font-size: 0.9rem; color: #666;">${unit.description || '暂无描述'}</p>
+                                </div>
+                                <div class="resource-actions">
+                                    <button class="btn btn-sm btn-info" onclick="window.location.href='/learning-unit?id=${unit.id}'">查看详情</button>
+                                    <button class="btn btn-sm btn-success" onclick="markUnitComplete(${unit.id}, this)">${completeButtonText}</button>
+                                    <button class="btn btn-sm btn-outline" onclick="toggleFavorite(${unit.id}, this)">收藏</button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    html += '<div class="error">该阶段暂无学习单元</div>';
+                }
+
+                html += `
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // 标记单元完成
+        function markUnitComplete(unitId, button) {
+            if (!token) {
+                alert('请先登录');
+                window.location.href = '/login';
+                return;
+            }
+
+            const resourceItem = button.closest('.resource-item');
+            const statusBadge = resourceItem.querySelector('.resource-status');
+            
+            if (statusBadge.classList.contains('status-not-started') || statusBadge.classList.contains('status-in-progress')) {
+                // 调用后端API标记完成
+                fetch(`/api/units/${unitId}/progress`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ status: 'COMPLETED', studyDuration: 0 })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.code === 200) {
+                        statusBadge.classList.remove('status-not-started', 'status-in-progress');
+                        statusBadge.classList.add('status-completed');
+                        statusBadge.textContent = '✅';
+                        button.textContent = '已完成';
+                        // 重新加载进度
+                        loadPathProgress(pathId);
+                    } else {
+                        alert('操作失败：' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('标记完成失败:', error);
+                    alert('操作失败，请稍后重试');
+                });
+            }
+        }
+
+        // 记录学习访问并跳转外部链接
+        function recordVisitAndOpen(unitId, url) {
+            if (token) {
+                fetch(`/api/progress/visit/${unitId}`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                }).then(() => {
+                    // 记录成功后打开链接
+                    if (url && url !== '#') {
+                        window.open(url, '_blank');
+                    }
+                }).catch(err => {
+                    console.error('记录学习访问失败:', err);
+                    // 即使记录失败也打开链接
+                    if (url && url !== '#') {
+                        window.open(url, '_blank');
+                    }
+                });
+            } else {
+                // 未登录时直接打开链接
+                if (url && url !== '#') {
+                    window.open(url, '_blank');
+                }
+            }
+        }
+
+        // 加载所有收藏按钮的状态
+        function loadFavoriteButtonsStatus() {
+            if (!token) return;
+
+            fetch('/api/favorites', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.code === 200 && data.data) {
+                    const favorites = data.data;
+
+                    // 更新单元收藏按钮
+                    const favoriteButtons = document.querySelectorAll('button[onclick^="toggleFavorite("]');
+                    favoriteButtons.forEach(button => {
+                        const onclick = button.getAttribute('onclick');
+                        const match = onclick.match(/toggleFavorite\((\d+)/);
+                        if (match) {
+                            const unitId = parseInt(match[1]);
+                            const isFavorited = favorites.some(fav =>
+                                fav.targetType === 'UNIT' && fav.targetId === unitId
+                            );
+
+                            if (isFavorited) {
+                                button.innerHTML = '<span>❤️</span>已收藏';
+                            } else {
+                                button.innerHTML = '<span>🤍</span>收藏';
+                            }
+                        }
+                    });
+
+                    // 更新路线收藏按钮
+                    const pathFavoriteBtn = document.getElementById('favoriteBtn');
+                    if (pathFavoriteBtn && window.currentPathId) {
+                        const isPathFavorited = favorites.some(fav =>
+                            fav.targetType === 'PATH' && fav.targetId === window.currentPathId
+                        );
+
+                        if (isPathFavorited) {
+                            pathFavoriteBtn.innerHTML = '<span>❤️</span>已收藏';
+                        } else {
+                            pathFavoriteBtn.innerHTML = '<span>🤍</span>收藏';
+                        }
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('加载收藏状态失败:', error);
+            });
+        }
+
+        // 切换收藏状态（单元收藏）
+        function toggleFavorite(unitId, button) {
+            if (!token) {
+                alert('请先登录');
+                window.location.href = '/login';
+                return;
+            }
+
+            if (button.textContent.includes('已收藏')) {
+                // 取消收藏 - 调用后端API删除数据库记录
+                fetch('/api/favorites/target', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ targetType: 'UNIT', targetId: unitId })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.code === 200) {
+                        button.innerHTML = '<span>🤍</span>收藏';
+                    } else {
+                        alert('取消收藏失败：' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('取消收藏失败:', error);
+                    alert('取消收藏失败，请稍后重试');
+                });
+            } else {
+                // 添加收藏
+                fetch('/api/favorites', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ targetType: 'UNIT', targetId: unitId })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.code === 200) {
+                        button.innerHTML = '<span>❤️</span>已收藏';
+                    } else {
+                        alert('添加收藏失败：' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('添加收藏失败:', error);
+                    alert('添加收藏失败，请稍后重试');
+                });
+            }
+        }
+
+        // 切换路线收藏状态
+        function togglePathFavorite(pathId, button) {
+            if (!token) {
+                alert('请先登录');
+                window.location.href = '/login';
+                return;
+            }
+
+            if (button.textContent.includes('已收藏')) {
+                // 取消收藏 - 调用后端API删除数据库记录
+                fetch('/api/favorites/target', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ targetType: 'PATH', targetId: pathId })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.code === 200) {
+                        button.innerHTML = '<span>🤍</span>收藏';
+                    } else {
+                        alert('取消收藏失败：' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('取消收藏失败:', error);
+                    alert('取消收藏失败，请稍后重试');
+                });
+            } else {
+                // 添加收藏
+                fetch('/api/favorites', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ targetType: 'PATH', targetId: pathId })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.code === 200) {
+                        button.innerHTML = '<span>❤️</span>已收藏';
+                    } else {
+                        alert('添加收藏失败：' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('添加收藏失败:', error);
+                    alert('添加收藏失败，请稍后重试');
+                });
+            }
+        }
+
+        // 加载评论
+        function loadComments(pathId) {
+            const commentsList = document.getElementById('commentsList');
+            commentsList.innerHTML = '<div class="loading">加载评论中...</div>';
+            
+            fetch(`/api/comments/PATH/${pathId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.code === 200) {
+                        renderComments(data.data);
+                    } else {
+                        console.error('加载评论失败:', data.message);
+                        commentsList.innerHTML = '<div style="text-align: center; color: #dc3545; padding: 2rem;">加载评论失败，请刷新页面重试</div>';
+                    }
+                })
+                .catch(error => {
+                    console.error('加载评论失败:', error);
+                    commentsList.innerHTML = '<div style="text-align: center; color: #dc3545; padding: 2rem;">加载评论失败，请刷新页面重试</div>';
+                });
+        }
+
+        // 渲染评论
+        function renderComments(comments) {
+            const commentsList = document.getElementById('commentsList');
+            
+            if (!comments || comments.length === 0) {
+                commentsList.innerHTML = '<div style="text-align: center; color: #666; padding: 2rem;">暂无评论，快来发表第一条评论吧！</div>';
+                return;
+            }
+
+            let html = '';
+            comments.forEach(comment => {
+                const username = comment.username || `用户${comment.userId || '未知'}`;
+                const userInitial = username.charAt(0).toUpperCase();
+                
+                html += `
+                    <div class="comment-item" data-comment-id="${comment.id}" style="border: 1px solid #eee; border-radius: 6px; padding: 1.5rem; margin-bottom: 1rem;">
+                        <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 1rem;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <div class="user-avatar" style="width: 32px; height: 32px; font-size: 0.8rem;">${userInitial}</div>
+                                <div>
+                                    <div style="font-weight: 500;">${username}</div>
+                                    <div style="font-size: 0.8rem; color: #666;">${comment.createdAt ? new Date(comment.createdAt).toLocaleString() : '未知时间'}</div>
+                                </div>
+                            </div>
+                            <div style="color: #ff6b6b;">⭐⭐⭐⭐⭐</div>
+                        </div>
+                        <p style="margin-bottom: 1rem;">${comment.content || ''}</p>
+                        <div style="display: flex; gap: 1rem; font-size: 0.8rem;">
+                            <button style="background: none; border: none; color: #007bff; cursor: pointer;" class="likeBtn" onclick="likeComment(${comment.id}, this)">❤️ 点赞 (${comment.likesCount || 0})</button>
+                            <button style="background: none; border: none; color: #666; cursor: pointer;" class="replyBtn" onclick="toggleReplyBox(${comment.id})">💬 回复</button>
+                        </div>
+                        <div id="replyBox-${comment.id}" style="display: none; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #eee;">
+                            <textarea id="replyText-${comment.id}" style="width: 100%; min-height: 60px; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; resize: vertical;" placeholder="写下你的回复..."></textarea>
+                            <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 0.5rem;">
+                                <button class="btn btn-outline" style="padding: 0.25rem 0.75rem; font-size: 0.8rem;" onclick="cancelReply(${comment.id})">取消</button>
+                                <button class="btn btn-primary" style="padding: 0.25rem 0.75rem; font-size: 0.8rem;" onclick="submitReply(${comment.id})">回复</button>
+                            </div>
+                        </div>
+                        <div id="replies-${comment.id}" class="replies-container" style="margin-top: 1rem; padding-left: 1rem; border-left: 2px solid #e9ecef;">
+                `;
+                
+                if (comment.replies && comment.replies.length > 0) {
+                    comment.replies.forEach(reply => {
+                        const replyUsername = reply.username || `用户${reply.userId || '未知'}`;
+                        const replyUserInitial = replyUsername.charAt(0).toUpperCase();
+                        html += `
+                            <div style="background-color: #f8f9fa; border-radius: 4px; padding: 1rem; margin-bottom: 0.5rem;">
+                                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                    <div class="user-avatar" style="width: 24px; height: 24px; font-size: 0.7rem;">${replyUserInitial}</div>
+                                    <div>
+                                        <span style="font-weight: 500; font-size: 0.85rem;">${replyUsername}</span>
+                                        <span style="font-size: 0.75rem; color: #666; margin-left: 0.5rem;">${reply.createdAt ? new Date(reply.createdAt).toLocaleString() : '未知时间'}</span>
+                                    </div>
+                                </div>
+                                <p style="font-size: 0.9rem; color: #333; margin-bottom: 0.5rem;">${reply.content || ''}</p>
+                                <div style="display: flex; gap: 1rem; font-size: 0.75rem;">
+                                    <button style="background: none; border: none; color: #007bff; cursor: pointer;" onclick="likeComment(${reply.id}, this)">❤️ 点赞 (${reply.likesCount || 0})</button>
+                                    <button style="background: none; border: none; color: #666; cursor: pointer;" onclick="toggleReplyBox(${comment.id}, ${reply.id}, '${replyUsername}')">💬 回复</button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+                
+                html += `
+                        </div>
+                    </div>
+                `;
+            });
+
+            commentsList.innerHTML = html;
+        }
+
+        function toggleReplyBox(commentId, replyId, replyUsername) {
+            const replyBox = document.getElementById(`replyBox-${commentId}`);
+            const replyText = document.getElementById(`replyText-${commentId}`);
+            
+            if (replyId && replyUsername) {
+                replyText.placeholder = `回复 @${replyUsername}...`;
+            } else {
+                replyText.placeholder = '写下你的回复...';
+            }
+            
+            replyBox.style.display = 'block';
+            replyText.focus();
+        }
+
+        function cancelReply(commentId) {
+            const replyBox = document.getElementById(`replyBox-${commentId}`);
+            const replyText = document.getElementById(`replyText-${commentId}`);
+            replyBox.style.display = 'none';
+            replyText.value = '';
+            replyText.placeholder = '写下你的回复...';
+        }
+
+        function submitReply(commentId) {
+            if (!token) {
+                alert('请先登录');
+                window.location.href = '/login';
+                return;
+            }
+
+            const replyText = document.getElementById(`replyText-${commentId}`);
+            const content = replyText.value.trim();
+            
+            if (!content) {
+                alert('请输入回复内容');
+                return;
+            }
+
+            fetch(`/api/comments/${commentId}/reply`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    content: content
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.code === 200) {
+                    alert('回复成功！');
+                    replyText.value = '';
+                    document.getElementById(`replyBox-${commentId}`).style.display = 'none';
+                    loadComments(pathId);
+                } else {
+                    alert('回复失败：' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('回复失败:', error);
+                alert('回复失败，请稍后重试');
+            });
+        }
+
+        // 发表评论
+        function submitComment(pathId, content) {
+            if (!token) {
+                alert('请先登录');
+                window.location.href = '/login';
+                return;
+            }
+
+            fetch('/api/comments', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    targetType: 'PATH',
+                    targetId: pathId,
+                    content: content,
+                    parentId: null
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.code === 200) {
+                    alert('评论已发表！');
+                    document.getElementById('commentText').value = '';
+                    // 重新加载评论
+                    loadComments(pathId);
+                } else {
+                    alert('发表评论失败：' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('发表评论失败:', error);
+                alert('发表评论失败，请稍后重试');
+            });
+        }
+
+        // 点赞评论
+        function likeComment(commentId, button) {
+            if (!token) {
+                alert('请先登录');
+                window.location.href = '/login';
+                return;
+            }
+
+            fetch(`/api/comments/${commentId}/like`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.code === 200) {
+                    const currentText = button.textContent;
+                    const currentCount = parseInt(currentText.match(/\d+/)[0]);
+                    button.textContent = `❤️ 点赞 (${currentCount + 1})`;
+                    alert('点赞成功！');
+                } else {
+                    alert('点赞失败：' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('点赞失败:', error);
+                alert('点赞失败，请稍后重试');
+            });
+        }
+
+        // 加载学习领域下拉菜单
+        async function loadDomainDropdown() {
+            try {
+                const [catRes, subRes] = await Promise.all([
+                    fetch('/api/categories/active'),
+                    fetch('/api/subcategories/all')
+                ]);
+                const catData = await catRes.json();
+                const subData = await subRes.json();
+                if (catData.code !== 200 || subData.code !== 200) return;
+                const categories = catData.data || [];
+                const subcategories = subData.data || [];
+                const dropdown = document.getElementById('domainDropdown');
+                if (!dropdown) return;
+                categories.forEach(cat => {
+                    const catSubs = subcategories.filter(s => s.categoryId === cat.id);
+                    if (catSubs.length > 0) {
+                        const group = document.createElement('div');
+                        group.className = 'menu-group';
+                        group.textContent = cat.name;
+                        dropdown.appendChild(group);
+                    }
+                    catSubs.forEach(sub => {
+                        const a = document.createElement('a');
+                        a.href = '/learning-subdomain?id=' + sub.id;
+                        a.textContent = sub.name;
+                        dropdown.appendChild(a);
+                    });
+                });
+            } catch(e) {}
+        }
+        loadDomainDropdown();
+    </script>
+</body>
+</html>

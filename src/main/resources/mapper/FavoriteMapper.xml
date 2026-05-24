@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.learning.mapper.FavoriteMapper">
+
+    <resultMap id="BaseResultMap" type="com.learning.entity.Favorite">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="target_type" property="targetType"/>
+        <result column="target_id" property="targetId"/>
+        <result column="created_at" property="createdAt"/>
+    </resultMap>
+
+    <select id="findByUserId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT * FROM favorites WHERE user_id = #{userId} ORDER BY created_at DESC
+    </select>
+
+    <select id="findById" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT * FROM favorites WHERE id = #{id}
+    </select>
+
+    <select id="findByUserAndTarget" resultMap="BaseResultMap">
+        SELECT * FROM favorites
+        WHERE user_id = #{userId} AND target_type = #{targetType} AND target_id = #{targetId}
+        LIMIT 1
+    </select>
+
+    <insert id="insert" parameterType="com.learning.entity.Favorite">
+        INSERT INTO favorites (user_id, target_type, target_id, created_at)
+        VALUES (#{userId}, #{targetType}, #{targetId}, NOW())
+    </insert>
+
+    <delete id="delete" parameterType="java.lang.Long">
+        DELETE FROM favorites WHERE id = #{id}
+    </delete>
+
+    <select id="existsByUserAndTarget" resultType="java.lang.Boolean">
+        SELECT COUNT(*) > 0 FROM favorites 
+        WHERE user_id = #{userId} AND target_type = #{targetType} AND target_id = #{targetId}
+    </select>
+
+    <insert id="insertWithParams" parameterType="map">
+        INSERT INTO favorites (user_id, target_type, target_id, created_at)
+        VALUES (#{userId}, #{targetType}, #{targetId}, NOW())
+    </insert>
+
+    <delete id="deleteByUserAndTarget" parameterType="map">
+        DELETE FROM favorites 
+        WHERE user_id = #{userId} AND target_type = #{targetType} AND target_id = #{targetId}
+    </delete>
+
+    <select id="countFavoritesByDateRange" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM favorites
+        WHERE created_at >= #{startDate} 
+        AND created_at &lt; #{endDate}
+    </select>
+
+</mapper>

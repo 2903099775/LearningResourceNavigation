@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.learning.mapper.CommentMapper">
+
+    <resultMap id="BaseResultMap" type="com.learning.entity.Comment">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="target_type" property="targetType"/>
+        <result column="target_id" property="targetId"/>
+        <result column="content" property="content"/>
+        <result column="parent_id" property="parentId"/>
+        <result column="likes_count" property="likesCount"/>
+        <result column="status" property="status"/>
+        <result column="is_top" property="isTop"/>
+        <result column="created_at" property="createdAt"/>
+    </resultMap>
+
+    <select id="findByTarget" resultMap="BaseResultMap">
+        SELECT * FROM comments
+        WHERE target_type = #{targetType} AND target_id = #{targetId} AND status != 2
+        ORDER BY is_top DESC, created_at DESC
+    </select>
+
+    <select id="findById" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT * FROM comments WHERE id = #{id}
+    </select>
+
+    <insert id="insert" parameterType="com.learning.entity.Comment">
+        INSERT INTO comments (user_id, target_type, target_id, content, parent_id, likes_count, status, is_top)
+        VALUES (#{userId}, #{targetType}, #{targetId}, #{content}, #{parentId}, 0, 1, 0)
+    </insert>
+
+    <update id="updateLikesCount" parameterType="java.lang.Long">
+        UPDATE comments SET likes_count = likes_count + 1 WHERE id = #{id}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.Long">
+        DELETE FROM comments WHERE id = #{id}
+    </delete>
+
+    <select id="findByStatus" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+        SELECT * FROM comments
+        WHERE status = #{status}
+        ORDER BY created_at DESC
+    </select>
+
+    <update id="updateStatus" parameterType="map">
+        UPDATE comments
+        SET status = #{status}
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateContent" parameterType="map">
+        UPDATE comments
+        SET content = #{content}
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateTop" parameterType="map">
+        UPDATE comments
+        SET is_top = #{isTop}
+        WHERE id = #{id}
+    </update>
+
+    <select id="findAll" resultMap="BaseResultMap">
+        SELECT * FROM comments
+        ORDER BY is_top DESC, created_at DESC
+    </select>
+
+    <select id="countAll" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM comments
+    </select>
+
+    <select id="countCommentsByDateRange" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM comments
+        WHERE created_at >= #{startDate} 
+        AND created_at &lt; #{endDate}
+    </select>
+
+</mapper>

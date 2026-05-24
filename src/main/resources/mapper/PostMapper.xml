@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.learning.mapper.PostMapper">
+
+    <resultMap id="BaseResultMap" type="com.learning.entity.Post">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="username" property="username"/>
+        <result column="user_avatar" property="userAvatar"/>
+        <result column="title" property="title"/>
+        <result column="content" property="content"/>
+        <result column="images" property="images"/>
+        <result column="likes_count" property="likesCount"/>
+        <result column="comments_count" property="commentsCount"/>
+        <result column="status" property="status"/>
+        <result column="is_pinned" property="isPinned"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <select id="findAll" resultMap="BaseResultMap">
+        SELECT p.*, u.username, u.avatar as user_avatar
+        FROM posts p
+        LEFT JOIN users u ON p.user_id = u.id
+        WHERE 1=1
+        <if test="keyword != null and keyword != ''">
+            AND (p.title LIKE CONCAT('%', #{keyword}, '%') OR p.content LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+        <if test="status != null">
+            AND p.status = #{status}
+        </if>
+        ORDER BY p.is_pinned DESC, p.created_at DESC
+    </select>
+
+    <select id="findByUserId" resultMap="BaseResultMap">
+        SELECT p.*, u.username, u.avatar as user_avatar
+        FROM posts p
+        LEFT JOIN users u ON p.user_id = u.id
+        WHERE p.user_id = #{userId} AND p.status = 1
+        ORDER BY p.is_pinned DESC, p.created_at DESC
+    </select>
+
+    <select id="findById" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT p.*, u.username, u.avatar as user_avatar
+        FROM posts p
+        LEFT JOIN users u ON p.user_id = u.id
+        WHERE p.id = #{id}
+    </select>
+
+    <insert id="insert" parameterType="com.learning.entity.Post" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO posts (user_id, title, content, images, likes_count, comments_count, status, is_pinned, created_at, updated_at)
+        VALUES (#{userId}, #{title}, #{content}, #{images}, 0, 0, 1, 0, NOW(), NOW())
+    </insert>
+
+    <update id="update" parameterType="com.learning.entity.Post">
+        UPDATE posts SET
+            title = #{title},
+            content = #{content},
+            images = #{images},
+            updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateStatus">
+        UPDATE posts SET status = #{status}, updated_at = NOW() WHERE id = #{id}
+    </update>
+
+    <update id="updateLikesCount">
+        UPDATE posts SET likes_count = likes_count + #{delta} WHERE id = #{id}
+    </update>
+
+    <update id="updateCommentsCount">
+        UPDATE posts SET comments_count = comments_count + #{delta} WHERE id = #{id}
+    </update>
+
+    <update id="updatePinned">
+        UPDATE posts SET is_pinned = #{isPinned}, updated_at = NOW() WHERE id = #{id}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.Long">
+        UPDATE posts SET status = 0, updated_at = NOW() WHERE id = #{id}
+    </delete>
+
+    <select id="countAll" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM posts WHERE 1=1
+        <if test="keyword != null and keyword != ''">
+            AND (title LIKE CONCAT('%', #{keyword}, '%') OR content LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+    </select>
+
+    <select id="findMonthlyTopUsers" resultType="java.util.Map">
+        SELECT
+            u.id as userId,
+            u.username,
+            u.avatar,
+            COUNT(p.id) as postCount
+        FROM posts p
+        LEFT JOIN users u ON p.user_id = u.id
+        WHERE p.status = 1
+          AND p.created_at >= DATE_FORMAT(NOW(), '%Y-%m-01')
+          AND p.created_at &lt; DATE_ADD(DATE_FORMAT(NOW(), '%Y-%m-01'), INTERVAL 1 MONTH)
+        GROUP BY p.user_id, u.id, u.username, u.avatar
+        ORDER BY postCount DESC
+        LIMIT #{limit}
+    </select>
+
+</mapper>

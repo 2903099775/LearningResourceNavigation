@@ -1,0 +1,2698 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>个人中心 - 学习资源导航系统</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        header {
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #007bff;
+            text-decoration: none;
+            line-height: 1.5;
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+            margin: 0;
+            padding: 0;
+            align-items: center;
+        }
+        
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        
+        .nav-links a:hover {
+            color: #007bff;
+        }
+
+        .nav-links .dropdown { position: relative; }
+        .nav-links .dropdown-toggle { cursor: pointer; display: flex; align-items: center; gap: 4px; }
+        .nav-links .dropdown-toggle::after { content: '\25BC'; font-size: 0.6em; transition: transform 0.3s; }
+        .nav-links .dropdown:hover .dropdown-toggle::after { transform: rotate(180deg); }
+        .nav-links .dropdown-menu { display: none; position: absolute; top: 100%; left: -1rem; background: #fff; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); min-width: 180px; padding: 0.5rem 0; z-index: 1001; }
+        .nav-links .dropdown:hover .dropdown-menu { display: block; }
+        .nav-links .dropdown-menu a { display: block; padding: 0.6rem 1.2rem; color: #333; white-space: nowrap; border-radius: 4px; margin: 0 0.3rem; text-decoration: none; }
+        .nav-links .dropdown-menu a:hover { background: #f0f7ff; color: #007bff; }
+        .nav-links .dropdown-menu .menu-group { padding: 0.3rem 1.2rem 0.1rem; font-size: 0.75rem; color: #999; font-weight: 600; }
+        
+        .search-box {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        
+        .search-box input {
+            padding: 0.5rem 1rem;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            outline: none;
+            width: 300px;
+            line-height: 1.5;
+        }
+        
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .auth-buttons {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #007bff;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+        }
+        
+        .profile-container {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .sidebar {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .sidebar-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background-color: #007bff;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 0 auto 1rem;
+            background-size: cover;
+            background-position: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sidebar-avatar:hover {
+            opacity: 0.8;
+        }
+
+        .sidebar-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .avatar-upload-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            text-align: center;
+            padding: 5px;
+            font-size: 0.7rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .sidebar-avatar:hover .avatar-upload-overlay {
+            opacity: 1;
+        }
+
+        #avatarInput {
+            display: none;
+        }
+
+        .avatar-crop-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .avatar-crop-modal.show {
+            display: flex;
+        }
+
+        .avatar-crop-content {
+            background-color: white;
+            border-radius: 8px;
+            padding: 2rem;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow: auto;
+        }
+
+        .avatar-crop-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .avatar-crop-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .avatar-crop-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .avatar-crop-body {
+            margin-bottom: 1.5rem;
+        }
+
+        .avatar-crop-container {
+            width: 100%;
+            height: 400px;
+            background-color: #f8f9fa;
+            margin-bottom: 1rem;
+        }
+
+        .avatar-crop-container img {
+            max-width: 100%;
+            display: block;
+        }
+
+        .avatar-crop-footer {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+        }
+
+        .avatar-crop-btn {
+            padding: 0.5rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .avatar-crop-btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .avatar-crop-btn-primary:hover {
+            background-color: #0056b3;
+        }
+
+        .avatar-crop-btn-secondary {
+            background-color: white;
+            color: #333;
+            border: 1px solid #ddd;
+        }
+
+        .avatar-crop-btn-secondary:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .sidebar-btn {
+            display: block;
+            width: 100%;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            border: none;
+            background-color: transparent;
+            color: #333;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+            text-align: left;
+        }
+        
+        .sidebar-btn:hover {
+            background-color: #f8f9fa;
+            color: #007bff;
+        }
+        
+        .sidebar-btn.active {
+            background-color: #e3f2fd;
+            color: #007bff;
+        }
+
+        .sidebar-btn.vip-only-btn {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            position: relative;
+        }
+
+        .sidebar-btn.vip-only-btn:hover {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            transform: translateX(4px);
+        }
+
+        .sidebar-btn.vip-only-btn::after {
+            content: 'VIP';
+            position: absolute;
+            right: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.65rem;
+            background: rgba(255, 255, 255, 0.3);
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            font-weight: 700;
+        }
+        
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+        
+        .profile-header {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 2rem;
+        }
+        
+        .profile-info {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .user-details h2 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .user-details .level {
+            color: #ff6b6b;
+            margin-bottom: 0.5rem;
+        }
+        
+        .user-details .vip-status {
+            color: #ffc107;
+            font-weight: 500;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            text-align: center;
+            padding: 1.5rem;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .trend-chart {
+            background-color: #f8f9fa;
+            padding: 2rem;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 200px;
+            width: 100%;
+        }
+
+        .chart-placeholder {
+            height: 200px;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: #666;
+        }
+        
+        .learning-section {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 2rem;
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .view-all {
+            color: #007bff;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        
+        .view-all:hover {
+            text-decoration: underline;
+        }
+        
+        .learning-item {
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .learning-item:hover {
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .learning-progress {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        
+        .progress-bar {
+            flex: 1;
+            height: 8px;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 0 1rem;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: #007bff;
+            border-radius: 4px;
+        }
+        
+        .continue-btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        
+        .continue-btn:hover {
+            background-color: #0056b3;
+        }
+        
+        .last-study {
+            font-size: 0.8rem;
+            color: #666;
+        }
+        
+        .notes-section {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 2rem;
+        }
+        
+        .notes-list {
+            list-style: none;
+        }
+        
+        .notes-list li {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .notes-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .note-title {
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .note-meta {
+            font-size: 0.8rem;
+            color: #666;
+            margin-left: 1rem;
+        }
+        
+        footer {
+            border-top: 1px solid #eaeaea;
+            padding: 2rem 0;
+            margin-top: 4rem;
+            text-align: center;
+            background-color: #fff;
+        }
+
+        .footer-copy {
+            color: #999;
+            font-size: 0.85rem;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <nav>
+                <a href="/" class="logo">学习资源导航</a>
+                <ul class="nav-links">
+                    <li><a href="/">首页</a></li>
+                    <li class="dropdown">
+                        <a href="/learning-domains" class="dropdown-toggle">学习领域</a>
+                        <div class="dropdown-menu" id="domainDropdown"></div>
+                    </li>
+                    <li><a href="/learning-path">学习路线</a></li>
+                    <li><a href="/community">社区</a></li>
+                </ul>
+                <div class="search-box">
+                    <input type="text" placeholder="搜索学习资源...">
+                </div>
+                <div class="user-menu">
+                    <a href="/login" style="text-decoration: none; display: flex; align-items: center; gap: 0.5rem; color: #555;" id="loginLink">
+                        <div class="user-avatar" style="font-size: 0.75rem;">登</div>
+                        <span style="font-size: 0.85rem;">登录</span>
+                    </a>
+                    <a href="/profile" style="text-decoration: none; display: none;" id="profileLink">
+                        <div class="user-avatar">U</div>
+                    </a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="profile-container">
+                <aside class="sidebar">
+                    <input type="file" id="avatarInput" accept="image/jpeg,image/png,image/gif,image/webp">
+                    <div class="sidebar-avatar" id="sidebarAvatar" onclick="document.getElementById('avatarInput').click()">
+                        <div class="avatar-upload-overlay">点击更换头像</div>
+                    </div>
+                    <button class="sidebar-btn" onclick="document.getElementById('avatarInput').click()">更换头像</button>
+                    <div style="border-top: 1px solid #eee; margin: 1rem 0;"></div>
+                    <button class="sidebar-btn active">个人中心</button>
+                    <button class="sidebar-btn">编辑资料</button>
+                    <button class="sidebar-btn">我的收藏</button>
+                    <button class="sidebar-btn">我的笔记</button>
+                    <button class="sidebar-btn">学习轨迹</button>
+                    <button class="sidebar-btn" id="vipDataBtn">📊 学习数据分析</button>
+                    <button class="sidebar-btn" id="vipAchieveBtn">🏆 学习成就</button>
+                    <button class="sidebar-btn">消息通知</button>
+                    <button class="sidebar-btn">设置</button>
+                </aside>
+
+                <div class="main-content">
+                    <section class="profile-header">
+                        <div class="profile-info">
+                            <div class="sidebar-avatar" id="profileAvatar" style="width: 80px; height: 80px; font-size: 1.5rem;">
+                                <div class="avatar-upload-overlay">更换</div>
+                            </div>
+                            <div class="user-details">
+                                <h2>用户名：加载中...</h2>
+                                <div class="level">等级：加载中...</div>
+                                <div class="vip-status">会员状态：加载中...</div>
+                            </div>
+                        </div>
+
+                        <div class="stats-grid" id="statsGrid">
+                            <div class="stat-card">
+                                <div class="stat-number" id="statCompleted">--</div>
+                                <div class="stat-label">已完成单元</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number" id="statVisits">--</div>
+                                <div class="stat-label">学习次数</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number" id="statRate">--</div>
+                                <div class="stat-label">完成率</div>
+                            </div>
+                        </div>
+
+                        <div class="trend-chart" id="trendChartSection">
+                            <h3 style="margin-bottom: 1rem;">📈 最近7天学习趋势图</h3>
+                            <div class="chart-container" id="chartContainer"></div>
+                        </div>
+                    </section>
+
+                    <section class="learning-section">
+                        <div class="section-header">
+                            <h2 class="section-title">📚 正在学习 (3)</h2>
+                            <a href="#" class="view-all">查看全部</a>
+                        </div>
+                        <div class="learning-item">
+                            <div class="learning-progress">
+                                <span>Java后端开发路线</span>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 60%"></div>
+                                </div>
+                                <span>60%</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span class="last-study">上次学习：2小时前</span>
+                                <a href="/learning-path" class="continue-btn">继续学习</a>
+                            </div>
+                        </div>
+                        <div class="learning-item">
+                            <div class="learning-progress">
+                                <span>Linux运维基础</span>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 30%"></div>
+                                </div>
+                                <span>30%</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span class="last-study">上次学习：昨天</span>
+                                <a href="#" class="continue-btn">继续学习</a>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="notes-section">
+                        <div class="section-header">
+                            <h2 class="section-title">📝 最近笔记 (5)</h2>
+                            <a href="#" class="view-all">查看全部</a>
+                        </div>
+                        <ul class="notes-list">
+                            <li>
+                                <span class="note-title">Java集合框架总结</span>
+                                <span class="note-meta">- 2026-04-05 - Java路线</span>
+                            </li>
+                            <li>
+                                <span class="note-title">MySQL索引优化笔记</span>
+                                <span class="note-meta">- 2026-04-03 - 数据库路线</span>
+                            </li>
+                            <li>
+                                <span class="note-title">Spring IOC原理解析</span>
+                                <span class="note-meta">- 2026-04-01 - Spring路线</span>
+                            </li>
+                        </ul>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="vipDataModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; overflow-y: auto;">
+        <div style="background: white; padding: 2rem; border-radius: 8px; max-width: 900px; width: 95%; margin: 2rem auto; max-height: 90vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                <h2 style="color: #333;">📊 学习数据分析</h2>
+                <button id="closeVipDataBtn" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #666;">&times;</button>
+            </div>
+            
+            <div class="vip-data-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                <div class="vip-data-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1.5rem; border-radius: 8px;">
+                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">📈</div>
+                    <div style="font-size: 1.5rem; font-weight: bold;" id="vipTotalHours">0</div>
+                    <div style="font-size: 0.9rem; opacity: 0.9;">总学习时长(小时)</div>
+                </div>
+                <div class="vip-data-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 1.5rem; border-radius: 8px;">
+                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">🎯</div>
+                    <div style="font-size: 1.5rem; font-weight: bold;" id="vipStreakDays">0</div>
+                    <div style="font-size: 0.9rem; opacity: 0.9;">连续学习天数</div>
+                </div>
+                <div class="vip-data-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 1.5rem; border-radius: 8px;">
+                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">📚</div>
+                    <div style="font-size: 1.5rem; font-weight: bold;" id="vipPathsCount">0</div>
+                    <div style="font-size: 0.9rem; opacity: 0.9;">完成学习路线</div>
+                </div>
+                <div class="vip-data-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white; padding: 1.5rem; border-radius: 8px;">
+                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">📝</div>
+                    <div style="font-size: 1.5rem; font-weight: bold;" id="vipNotesCount">0</div>
+                    <div style="font-size: 0.9rem; opacity: 0.9;">笔记总数</div>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 2rem;">
+                <h3 style="margin-bottom: 1rem; color: #333;">📊 学习趋势图</h3>
+                <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px;">
+                    <canvas id="vipTrendChart" style="max-height: 300px;"></canvas>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 2rem;">
+                <h3 style="margin-bottom: 1rem; color: #333;">📍 学习轨迹</h3>
+                <div id="vipLearningTrack" style="background: #f8f9fa; padding: 1rem; border-radius: 8px; max-height: 300px; overflow-y: auto;">
+                    <div style="text-align: center; padding: 2rem; color: #666;">加载中...</div>
+                </div>
+            </div>
+
+            <div>
+                <h3 style="margin-bottom: 1rem; color: #333;">📝 我的笔记</h3>
+                <div id="vipNotesList" style="background: #f8f9fa; padding: 1rem; border-radius: 8px; max-height: 300px; overflow-y: auto;">
+                    <div style="text-align: center; padding: 2rem; color: #666;">加载中...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="vipAchieveModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; overflow-y: auto;">
+        <div style="background: white; padding: 2rem; border-radius: 8px; max-width: 800px; width: 95%; margin: 2rem auto; max-height: 90vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                <h2 style="color: #333;">🏆 学习成就</h2>
+                <button id="closeVipAchieveBtn" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #666;">&times;</button>
+            </div>
+
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <div style="display: inline-block; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 1rem 2rem; border-radius: 50px; font-size: 1.2rem; font-weight: bold;">
+                    🏅 成就点数: <span id="achievePoints">0</span>
+                </div>
+            </div>
+
+            <div id="achieveList" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                <div style="text-align: center; padding: 2rem; color: #666;">加载中...</div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p class="footer-copy">&copy; 2026 学习资源导航系统</p>
+        </div>
+    </footer>
+
+    <script>
+        let user = null;
+        let token = localStorage.getItem('token');
+        let cropper = null;
+        let selectedFile = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDomainDropdown();
+            checkLoginStatus();
+            
+            const avatarInput = document.getElementById('avatarInput');
+            if (avatarInput) {
+                avatarInput.addEventListener('change', handleAvatarUpload);
+            }
+            
+            const sidebarBtns = document.querySelectorAll('.sidebar-btn');
+            sidebarBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const btnText = this.textContent.trim();
+                    if (btnText === '更换头像') {
+                        return;
+                    }
+                    
+                    sidebarBtns.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    switch (btnText) {
+                        case '个人中心':
+                            showProfileHome();
+                            break;
+                        case '编辑资料':
+                            showEditProfile();
+                            break;
+                        case '我的收藏':
+                            showFavorites();
+                            break;
+                        case '我的笔记':
+                            showNotes();
+                            break;
+                        case '学习轨迹':
+                            showLearningTrack();
+                            break;
+                        case '📊 学习数据分析':
+                            showVipDataAnalysis();
+                            break;
+                        case '🏆 学习成就':
+                            showVipAchievements();
+                            break;
+                        case '消息通知':
+                            showNotifications();
+                            break;
+                        case '设置':
+                            showSettings();
+                            break;
+                    }
+                });
+            });
+
+            const viewAllBtns = document.querySelectorAll('.view-all');
+            viewAllBtns.forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const sectionTitle = this.parentElement.querySelector('.section-title').textContent;
+                    if (sectionTitle.includes('正在学习')) {
+                        showLearningTrack();
+                    } else if (sectionTitle.includes('最近笔记')) {
+                        showNotes();
+                    }
+                });
+            });
+
+            const continueBtns = document.querySelectorAll('.continue-btn');
+            continueBtns.forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    if (!this.getAttribute('href')) {
+                        e.preventDefault();
+                        alert('继续学习功能开发中...');
+                    }
+                });
+            });
+
+            // VIP 相关功能初始化
+            const closeVipDataBtn = document.getElementById('closeVipDataBtn');
+            if (closeVipDataBtn) {
+                closeVipDataBtn.addEventListener('click', closeVipDataAnalysis);
+            }
+            const closeVipAchieveBtn = document.getElementById('closeVipAchieveBtn');
+            if (closeVipAchieveBtn) {
+                closeVipAchieveBtn.addEventListener('click', closeVipAchievements);
+            }
+            const vipDataModal = document.getElementById('vipDataModal');
+            if (vipDataModal) {
+                vipDataModal.addEventListener('click', function(e) {
+                    if (e.target === vipDataModal) closeVipDataAnalysis();
+                });
+            }
+            const vipAchieveModal = document.getElementById('vipAchieveModal');
+            if (vipAchieveModal) {
+                vipAchieveModal.addEventListener('click', function(e) {
+                    if (e.target === vipAchieveModal) closeVipAchievements();
+                });
+            }
+        });
+
+        // 解析后端返回的时间（兼容 LocalDateTime 对象和 ISO 字符串）
+        function parseBackendDate(timeValue) {
+            if (!timeValue) return null;
+            if (typeof timeValue === 'string') {
+                const dt = new Date(timeValue);
+                return isNaN(dt.getTime()) ? null : dt;
+            }
+            if (typeof timeValue === 'object' && timeValue.year != null) {
+                const dt = new Date(timeValue.year, timeValue.month - 1, timeValue.day,
+                    timeValue.hour || 0, timeValue.minute || 0, timeValue.second || 0);
+                return isNaN(dt.getTime()) ? null : dt;
+            }
+            return null;
+        }
+
+        function formatDateTime(dt) {
+            if (!dt || isNaN(dt.getTime())) return '暂无';
+            return dt.getFullYear() + '-' +
+                String(dt.getMonth() + 1).padStart(2, '0') + '-' +
+                String(dt.getDate()).padStart(2, '0') + ' ' +
+                String(dt.getHours()).padStart(2, '0') + ':' +
+                String(dt.getMinutes()).padStart(2, '0');
+        }
+
+        function formatDateTimeLocale(dt) {
+            if (!dt || isNaN(dt.getTime())) return '未知';
+            return dt.toLocaleString();
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            let date;
+            if (dateString instanceof Date) {
+                date = dateString;
+            } else {
+                date = new Date(dateString);
+            }
+            if (isNaN(date.getTime())) {
+                return '无效日期';
+            }
+            return date.toLocaleString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+        }
+
+        // 检查登录状态
+        function checkLoginStatus() {
+            token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '/login';
+                return Promise.reject('未登录');
+            }
+
+            // 始终通过后端验证token有效性
+            return fetch('/api/user/profile', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(response => {
+                if (response.status === 401 || response.status === 403) {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+                    window.location.href = '/login';
+                    return null;
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (!data) return;
+                if (data.code === 200) {
+                    user = data.data;
+                    localStorage.setItem('user', JSON.stringify(user));
+                    updateUserInfo();
+                } else {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+                    window.location.href = '/login';
+                }
+            })
+            .catch(error => {
+                console.error('验证登录状态失败:', error);
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                window.location.href = '/login';
+            });
+        }
+
+        function updateUserInfo() {
+            if (!user) return;
+
+            const loginLink = document.getElementById('loginLink');
+            const profileLink = document.getElementById('profileLink');
+            if (loginLink) loginLink.style.display = 'none';
+            if (profileLink) {
+                profileLink.style.display = 'flex';
+                const profileAvatar = profileLink.querySelector('.user-avatar');
+                if (user.avatar) {
+                    const avatarUrl = user.avatar + (user.avatar.includes('?') ? '&' : '?') + 't=' + Date.now();
+                    profileAvatar.innerHTML = `<img src="${avatarUrl}" alt="${user.username}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+                } else {
+                    profileAvatar.textContent = user.username.charAt(0).toUpperCase();
+                }
+            }
+
+            const sidebarAvatar = document.getElementById('sidebarAvatar');
+            const profileAvatar = document.getElementById('profileAvatar');
+            
+            if (user.avatar) {
+                const avatarUrl = user.avatar + (user.avatar.includes('?') ? '&' : '?') + 't=' + Date.now();
+                if (sidebarAvatar) {
+                    sidebarAvatar.innerHTML = `<img src="${avatarUrl}" alt="${user.username}"><div class="avatar-upload-overlay">点击更换头像</div>`;
+                }
+                if (profileAvatar) {
+                    profileAvatar.innerHTML = `<img src="${avatarUrl}" alt="${user.username}"><div class="avatar-upload-overlay">更换</div>`;
+                }
+            } else {
+                const initial = user.username.charAt(0).toUpperCase();
+                if (sidebarAvatar) {
+                    sidebarAvatar.innerHTML = `${initial}<div class="avatar-upload-overlay">点击更换头像</div>`;
+                }
+                if (profileAvatar) {
+                    profileAvatar.innerHTML = `${initial}<div class="avatar-upload-overlay">更换</div>`;
+                }
+            }
+            
+            const userDetails = document.querySelector('.user-details');
+            const isVip = user.vipExpireDate && new Date(user.vipExpireDate) > new Date();
+            userDetails.innerHTML = `
+                <h2>用户名：${user.username}</h2>
+                <div class="level">等级：Lv.${user.level || 1} ${getLevelName(user.level || 1)}</div>
+                <div class="vip-status">会员状态：${isVip ? 'VIP' : '普通用户'}</div>
+            `;
+
+            loadUserProfileStats();
+            loadLearningRecords();
+            loadRecentNotes();
+        }
+
+        // 获取等级名称
+        function getLevelName(level) {
+            const levelNames = ['新手', '初级学者', '中级学者', '进阶学者', '高级学者', '专家', '大师'];
+            return levelNames[Math.min(level - 1, levelNames.length - 1)];
+        }
+
+        // 加载用户profile统计数据
+        function loadUserProfileStats() {
+            fetch('/api/progress/profile-stats', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.code === 200 && data.data) {
+                    const stats = data.data;
+                    const statCompleted = document.getElementById('statCompleted');
+                    const statVisits = document.getElementById('statVisits');
+                    const statRate = document.getElementById('statRate');
+
+                    if (statCompleted) statCompleted.textContent = stats.completedUnits || 0;
+                    if (statVisits) statVisits.textContent = stats.totalVisits || 0;
+                    if (statRate) statRate.textContent = stats.completionRate || '0%';
+                }
+            })
+            .catch(err => {
+                console.error('加载用户统计数据失败:', err);
+            });
+
+            loadWeeklyTrendChart();
+        }
+
+        // 加载并渲染周学习趋势图表
+        function loadWeeklyTrendChart() {
+            fetch('/api/progress/weekly-trend', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.code === 200 && data.data) {
+                    renderTrendChart(data.data);
+                }
+            })
+            .catch(err => {
+                console.error('加载学习趋势数据失败:', err);
+            });
+        }
+
+        // 渲染学习趋势图表
+        function renderTrendChart(trendData) {
+            const chartContainer = document.getElementById('chartContainer');
+            if (!chartContainer) return;
+
+            const existingCanvas = chartContainer.querySelector('canvas');
+            if (existingCanvas) {
+                existingCanvas.remove();
+            }
+
+            const canvas = document.createElement('canvas');
+            canvas.id = 'weeklyTrendChart';
+            canvas.style.maxHeight = '200px';
+            chartContainer.appendChild(canvas);
+
+            const labels = trendData.dates.map(date => {
+                const d = new Date(date);
+                return `${d.getMonth() + 1}/${d.getDate()}`;
+            });
+
+            const ctx = canvas.getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '学习时长(分钟)',
+                        data: trendData.durations,
+                        borderColor: '#007bff',
+                        backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#007bff',
+                        pointBorderColor: '#fff',
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    aspectRatio: 2.5,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                font: { size: 12 },
+                                color: '#666'
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                label: function(context) {
+                                    return `学习时长: ${context.raw} 分钟`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#666', font: { size: 11 } }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: '#eee' },
+                            ticks: {
+                                color: '#666',
+                                font: { size: 11 },
+                                callback: function(value) {
+                                    return value + '分钟';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 加载学习记录
+        function loadLearningRecords() {
+            const learningSection = document.querySelector('.learning-section');
+            if (!isVipUser() && learningSection) {
+                learningSection.innerHTML = `
+                    <div class="section-header">
+                        <h2 class="section-title">📚 学习记录</h2>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); border: 1px solid #4caf50; border-radius: 8px; padding: 2rem; text-align: center;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">💎</div>
+                        <h3 style="color: #2e7d32; margin-bottom: 0.5rem;">VIP会员专属功能</h3>
+                        <p style="color: #2e7d32; margin-bottom: 1rem;">开通VIP会员即可解锁学习记录功能，查看详细的学习进度</p>
+                        <a href="/vip" class="btn btn-primary" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-color: #f59e0b;">开通VIP会员</a>
+                    </div>
+                `;
+                return;
+            }
+
+            // 加载最近学习记录
+            fetch('/api/progress/recent?limit=5', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            .then(res => res.json())
+            .then(data => {
+                const learningSection = document.querySelector('.learning-section');
+                if (data.code === 200 && data.data && data.data.length > 0) {
+                    let learningHTML = `
+                        <div class="section-header">
+                            <h2 class="section-title">📚 最近学习记录 (${data.data.length})</h2>
+                            <a href="#" class="view-all" onclick="showLearningTrack(); return false;">查看全部</a>
+                        </div>
+                    `;
+                    data.data.forEach(record => {
+                        const lastStudyTime = formatDateTimeLocale(parseBackendDate(record.lastStudyTime));
+                        const status = record.status === 'COMPLETED' ? '✅ 已完成' : record.status === 'IN_PROGRESS' ? '🔄 进行中' : '📋 未开始';
+                        learningHTML += `
+                            <div class="learning-item">
+                                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                    <div style="display: flex; align-items: center; gap: 1rem;">
+                                        <span style="font-weight: 500; color: #333;">${record.unitTitle || '未知单元'}</span>
+                                        ${record.pathTitle ? `<span style="background-color: #e3f2fd; color: #1976d2; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.8rem;">${record.pathTitle}</span>` : ''}
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; color: #666;">
+                                        <span>${lastStudyTime}</span>
+                                        <span style="background-color: ${record.status === 'COMPLETED' ? '#e8f5e8' : record.status === 'IN_PROGRESS' ? '#e3f2fd' : '#f5f5f5'}; color: ${record.status === 'COMPLETED' ? '#2e7d32' : record.status === 'IN_PROGRESS' ? '#1976d2' : '#666'}; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.8rem;">${status}</span>
+                                    </div>
+                                    ${record.studyDuration ? `<div style="font-size: 0.8rem; color: #999;">学习时长：${Math.floor(record.studyDuration / 60)}分钟</div>` : ''}
+                                    <div style="margin-top: 0.5rem;">
+                                        <a href="/learning-unit?id=${record.unitId}" class="continue-btn" style="display: inline-block; padding: 0.4rem 0.8rem; font-size: 0.8rem;">查看详情</a>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    learningSection.innerHTML = learningHTML;
+                } else {
+                    learningSection.innerHTML = `
+                        <div class="section-header">
+                            <h2 class="section-title">📚 最近学习记录 (0)</h2>
+                        </div>
+                        <div style="text-align: center; padding: 2rem; color: #666;">暂无学习记录，开始你的学习之旅吧！</div>
+                    `;
+                }
+            })
+            .catch(err => {
+                console.error('加载最近学习记录失败:', err);
+                const learningSection = document.querySelector('.learning-section');
+                learningSection.innerHTML = `
+                    <div class="section-header">
+                        <h2 class="section-title">📚 最近学习记录</h2>
+                    </div>
+                    <div style="text-align: center; padding: 2rem; color: #999;">加载失败，请稍后重试</div>
+                `;
+            });
+        }
+
+        // 加载最近笔记
+        function loadRecentNotes() {
+            const notesSection = document.querySelector('.notes-section');
+            if (!isVipUser()) {
+                notesSection.innerHTML = `
+                    <div class="section-header">
+                        <h2 class="section-title">📝 我的学习笔记</h2>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); border: 1px solid #4caf50; border-radius: 8px; padding: 2rem; text-align: center;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">💎</div>
+                        <h3 style="color: #2e7d32; margin-bottom: 0.5rem;">VIP会员专属功能</h3>
+                        <p style="color: #2e7d32; margin-bottom: 1rem;">开通VIP会员即可解锁学习笔记功能，随时记录学习心得</p>
+                        <a href="/vip" class="btn btn-primary" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-color: #f59e0b;">开通VIP会员</a>
+                    </div>
+                `;
+                return;
+            }
+
+            fetch('/api/notes', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            .then(res => res.json())
+            .then(data => {
+                const notesSection = document.querySelector('.notes-section');
+                if (data.code === 200 && data.data && data.data.length > 0) {
+                    let notesHTML = `
+                        <div class="section-header">
+                            <h2 class="section-title">📝 最近笔记 (${data.data.length})</h2>
+                            <a href="#" class="view-all">查看全部</a>
+                        </div>
+                        <ul class="notes-list">
+                    `;
+                    data.data.slice(0, 5).forEach(note => {
+                        const date = note.createdAt ? new Date(note.createdAt).toLocaleDateString() : '';
+                        notesHTML += `
+                            <li>
+                                <span class="note-title">${note.title || '无标题'}</span>
+                                <span class="note-meta">- ${date}</span>
+                            </li>
+                        `;
+                    });
+                    notesHTML += '</ul>';
+                    notesSection.innerHTML = notesHTML;
+                } else {
+                    notesSection.innerHTML = `
+                        <div class="section-header">
+                            <h2 class="section-title">📝 最近笔记 (0)</h2>
+                        </div>
+                        <div style="text-align: center; padding: 2rem; color: #666;">暂无笔记，去学习单元页面记录你的第一篇笔记吧！</div>
+                    `;
+                }
+            })
+            .catch(err => {
+                console.error('加载笔记失败:', err);
+                const notesSection = document.querySelector('.notes-section');
+                notesSection.innerHTML = `
+                    <div class="section-header">
+                        <h2 class="section-title">📝 最近笔记</h2>
+                    </div>
+                    <div style="text-align: center; padding: 2rem; color: #999;">加载失败，请稍后重试</div>
+                `;
+            });
+        }
+
+        // 显示个人中心首页
+        function showProfileHome() {
+            const mainContent = document.querySelector('.main-content');
+            mainContent.innerHTML = `
+                <section class="profile-header">
+                    <div class="profile-info">
+                        <div class="sidebar-avatar" id="profileAvatar" style="width: 80px; height: 80px; font-size: 1.5rem;">
+                            <div class="avatar-upload-overlay">更换</div>
+                        </div>
+                        <div class="user-details">
+                            <h2>用户名：加载中...</h2>
+                            <div class="level">等级：加载中...</div>
+                            <div class="vip-status">会员状态：加载中...</div>
+                        </div>
+                    </div>
+
+                    <div class="stats-grid" id="statsGrid">
+                        <div class="stat-card">
+                            <div class="stat-number" id="statCompleted">--</div>
+                            <div class="stat-label">已完成单元</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="statVisits">--</div>
+                            <div class="stat-label">学习次数</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="statRate">--</div>
+                            <div class="stat-label">完成率</div>
+                        </div>
+                    </div>
+
+                    <section class="trend-chart" id="trendChartSection">
+                        <h3 style="margin-bottom: 1rem;">📈 最近7天学习趋势图</h3>
+                        <div class="chart-container" id="chartContainer"></div>
+                    </section>
+                </section>
+
+                <section class="learning-section">
+                    <div class="section-header">
+                        <h2 class="section-title">📚 正在学习 (3)</h2>
+                        <a href="#" class="view-all">查看全部</a>
+                    </div>
+                    <div class="learning-item">
+                        <div class="learning-progress">
+                            <span>Java后端开发路线</span>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 60%"></div>
+                            </div>
+                            <span>60%</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span class="last-study">上次学习：2小时前</span>
+                            <a href="/learning-path" class="continue-btn">继续学习</a>
+                        </div>
+                    </div>
+                    <div class="learning-item">
+                        <div class="learning-progress">
+                            <span>Linux运维基础</span>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 30%"></div>
+                            </div>
+                            <span>30%</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span class="last-study">上次学习：昨天</span>
+                            <a href="#" class="continue-btn">继续学习</a>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="notes-section">
+                    <div class="section-header">
+                        <h2 class="section-title">📝 最近笔记 (5)</h2>
+                        <a href="#" class="view-all">查看全部</a>
+                    </div>
+                    <ul class="notes-list">
+                        <li>
+                            <span class="note-title">Java集合框架总结</span>
+                            <span class="note-meta">- 2026-04-05 - Java路线</span>
+                        </li>
+                        <li>
+                            <span class="note-title">MySQL索引优化笔记</span>
+                            <span class="note-meta">- 2026-04-03 - 数据库路线</span>
+                        </li>
+                        <li>
+                            <span class="note-title">Spring IOC原理解析</span>
+                            <span class="note-meta">- 2026-04-01 - Spring路线</span>
+                        </li>
+                    </ul>
+                </section>
+            `;
+            
+            // 更新用户信息
+            updateUserInfo();
+            
+            // 处理笔记区域 - 检查是否VIP
+            const notesSection = document.querySelector('.notes-section');
+            if (!isVipUser() && notesSection) {
+                notesSection.innerHTML = `
+                    <div class="section-header">
+                        <h2 class="section-title">📝 我的学习笔记</h2>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); border: 1px solid #4caf50; border-radius: 8px; padding: 2rem; text-align: center;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">💎</div>
+                        <h3 style="color: #2e7d32; margin-bottom: 0.5rem;">VIP会员专属功能</h3>
+                        <p style="color: #2e7d32; margin-bottom: 1rem;">开通VIP会员即可解锁学习笔记功能，随时记录学习心得</p>
+                        <a href="/vip" class="btn btn-primary" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-color: #f59e0b;">开通VIP会员</a>
+                    </div>
+                `;
+            }
+            
+            // 重新绑定事件
+            const viewAllBtns = document.querySelectorAll('.view-all');
+            viewAllBtns.forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const sectionTitle = this.parentElement.querySelector('.section-title').textContent;
+                    if (sectionTitle.includes('正在学习')) {
+                        showLearningTrack();
+                    } else if (sectionTitle.includes('最近笔记')) {
+                        showNotes();
+                    }
+                });
+            });
+            
+            const continueBtns = document.querySelectorAll('.continue-btn');
+            continueBtns.forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    if (!this.getAttribute('href')) {
+                        e.preventDefault();
+                        alert('继续学习功能开发中...');
+                    }
+                });
+            });
+        }
+        
+        // 显示编辑资料
+        function showEditProfile() {
+            const mainContent = document.querySelector('.main-content');
+            mainContent.innerHTML = `
+                <section class="profile-header">
+                    <h2 style="margin-bottom: 2rem; color: #333;">编辑个人资料</h2>
+                    <form style="max-width: 600px;">
+                        <div style="margin-bottom: 1.5rem;">
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">用户名</label>
+                            <input type="text" id="editUsername" value="${user.username}" style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px;">
+                        </div>
+                        <div style="margin-bottom: 1.5rem;">
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">邮箱</label>
+                            <input type="email" id="editEmail" value="${user.email || ''}" style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px;">
+                        </div>
+                        <div style="margin-bottom: 1.5rem;">
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">手机号</label>
+                            <input type="tel" id="editPhone" value="${user.phone || ''}" placeholder="请输入手机号" style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px;">
+                        </div>
+
+                        <div style="margin-bottom: 1.5rem; padding-top: 1rem; border-top: 1px solid #eee;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background-color: #f8f9fa; border-radius: 6px;">
+                                <div>
+                                    <span style="font-weight: 500;">修改密码</span>
+                                    <p style="font-size: 0.8rem; color: #666; margin-top: 0.25rem;">定期修改密码可以保障账户安全</p>
+                                </div>
+                                <button type="button" id="changePasswordBtn" style="padding: 0.5rem 1rem; border: 1px solid #007bff; border-radius: 4px; background-color: white; color: #007bff; cursor: pointer; font-weight: 500;">修改密码</button>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 1rem;">
+                            <button type="button" class="continue-btn" id="saveProfileBtn" style="flex: 1;">保存修改</button>
+                            <button type="button" id="cancelEditBtn" style="flex: 1; padding: 0.5rem 1rem; border: 1px solid #ddd; border-radius: 4px; background-color: white; cursor: pointer; font-weight: 500;">取消</button>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- 密码验证弹窗 -->
+                <div id="passwordVerifyModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center;">
+                    <div style="background: white; padding: 2rem; border-radius: 8px; max-width: 400px; width: 90%;">
+                        <h3 style="margin-bottom: 1rem;">验证密码</h3>
+                        <p style="margin-bottom: 1rem; color: #666; font-size: 0.9rem;">为保障账户安全，请输入您的密码以确认修改</p>
+                        <input type="password" id="verifyPassword" placeholder="请输入密码" style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 1rem;">
+                        <div id="verifyError" style="color: #ff4444; font-size: 0.85rem; margin-bottom: 1rem; display: none;"></div>
+                        <div style="display: flex; gap: 1rem;">
+                            <button type="button" id="confirmVerifyBtn" class="continue-btn" style="flex: 1;">确认</button>
+                            <button type="button" id="cancelVerifyBtn" style="flex: 1; padding: 0.5rem 1rem; border: 1px solid #ddd; border-radius: 4px; background-color: white; cursor: pointer; font-weight: 500;">取消</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // 添加保存修改事件处理
+            document.getElementById('saveProfileBtn').addEventListener('click', saveProfile);
+            
+            document.getElementById('changePasswordBtn').addEventListener('click', function() {
+                showChangePasswordModal();
+            });
+            
+            document.getElementById('cancelEditBtn').addEventListener('click', function() {
+                showProfileHome();
+            });
+        }
+        
+        // 保存个人资料
+        function saveProfile() {
+            const username = document.getElementById('editUsername').value;
+            const email = document.getElementById('editEmail').value;
+            const phone = document.getElementById('editPhone').value;
+
+            // 验证输入
+            if (!username.trim()) {
+                alert('用户名不能为空');
+                return;
+            }
+
+            if (email && !validateEmail(email)) {
+                alert('邮箱格式不正确');
+                return;
+            }
+
+            if (phone && !/^1[3-9]\d{9}$/.test(phone)) {
+                alert('手机号格式不正确');
+                return;
+            }
+
+            // 显示密码验证弹窗
+            showPasswordVerifyModal(username, email, phone);
+        }
+
+        // 显示密码验证弹窗
+        function showPasswordVerifyModal(username, email, phone) {
+            const modal = document.getElementById('passwordVerifyModal');
+            const verifyInput = document.getElementById('verifyPassword');
+            const verifyError = document.getElementById('verifyError');
+
+            modal.style.display = 'flex';
+            verifyInput.value = '';
+            verifyError.style.display = 'none';
+
+            // 确认按钮事件
+            document.getElementById('confirmVerifyBtn').onclick = function() {
+                const password = verifyInput.value;
+                if (!password) {
+                    verifyError.textContent = '请输入密码';
+                    verifyError.style.display = 'block';
+                    return;
+                }
+
+                // 先验证密码
+                verifyPassword(password, (success) => {
+                    if (success) {
+                        // 密码验证成功后提交更新
+                        submitProfileUpdate(username, email, phone);
+                        modal.style.display = 'none';
+                    } else {
+                        verifyError.textContent = '密码错误，请重新输入';
+                        verifyError.style.display = 'block';
+                    }
+                });
+            };
+
+            // 取消按钮事件
+            document.getElementById('cancelVerifyBtn').onclick = function() {
+                modal.style.display = 'none';
+            };
+
+            // 回车键确认
+            verifyInput.onkeypress = function(e) {
+                if (e.key === 'Enter') {
+                    document.getElementById('confirmVerifyBtn').click();
+                }
+            };
+        }
+
+        // 验证密码
+        function verifyPassword(password, callback) {
+            fetch('/api/user/verify-password', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ password: password })
+            })
+            .then(response => response.json())
+            .then(data => {
+                callback(data.code === 200);
+            })
+            .catch(() => {
+                callback(false);
+            });
+        }
+
+        // 提交资料更新
+        function submitProfileUpdate(username, email, phone) {
+            const userData = {
+                username: username,
+                email: email,
+                phone: phone
+            };
+
+            fetch('/api/user', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(userData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.code === 200) {
+                    alert('个人资料更新成功');
+                    // 更新本地存储的用户信息
+                    user.username = username;
+                    user.email = email;
+                    user.phone = phone;
+                    localStorage.setItem('user', JSON.stringify(user));
+                    // 刷新页面显示
+                    showProfileHome();
+                } else {
+                    alert('更新失败: ' + (data.message || '未知错误'));
+                }
+            })
+            .catch(error => {
+                console.error('更新个人资料失败:', error);
+                alert('更新失败，请稍后重试');
+            });
+        }
+
+        // 验证邮箱格式
+        function validateEmail(email) {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        }
+
+        // 显示收藏
+        function showFavorites() {
+            if (!isVipUser()) {
+                const mainContent = document.querySelector('.main-content');
+                mainContent.innerHTML = `
+                    <section class="profile-header">
+                        <h2 style="margin-bottom: 2rem; color: #333;">我的收藏</h2>
+                        <div style="background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); border: 1px solid #4caf50; border-radius: 8px; padding: 2rem; text-align: center;">
+                            <div style="font-size: 3rem; margin-bottom: 1rem;">💎</div>
+                            <h3 style="color: #2e7d32; margin-bottom: 0.5rem;">VIP会员专属功能</h3>
+                            <p style="color: #2e7d32; margin-bottom: 1rem;">开通VIP会员即可解锁收藏功能，收藏感兴趣的学习资源</p>
+                            <a href="/vip" class="btn btn-primary" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-color: #f59e0b;">开通VIP会员</a>
+                        </div>
+                    </section>
+                `;
+                return;
+            }
+            const mainContent = document.querySelector('.main-content');
+            mainContent.innerHTML = `
+                <section class="profile-header">
+                    <h2 style="margin-bottom: 2rem; color: #333;">我的收藏</h2>
+                    <div style="text-align: center; padding: 3rem; color: #999;">加载中...</div>
+                </section>
+            `;
+            
+            // 调用API获取收藏列表
+            fetch('/api/favorites', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.code === 200 && data.data && data.data.length > 0) {
+                    let favoritesHTML = `
+                        <section class="profile-header">
+                            <h2 style="margin-bottom: 2rem; color: #333;">我的收藏 (${data.data.length})</h2>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+                    `;
+                    data.data.forEach(favorite => {
+                        if (favorite.path) {
+                            // 显示学习路线
+                            favoritesHTML += `
+                                <div style="border: 1px solid #ddd; border-radius: 8px; padding: 1.5rem;">
+                                    <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+                                        <span style="background-color: #e3f2fd; color: #1976d2; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.8rem; margin-right: 1rem;">路线</span>
+                                        <h3>${favorite.path.title || '无标题'}</h3>
+                                    </div>
+                                    <p style="color: #666; margin: 1rem 0;">${favorite.path.description || '无描述'}</p>
+                                    <a href="/learning-path?id=${favorite.path.id}" class="continue-btn" style="display: inline-block;">查看详情</a>
+                                </div>
+                            `;
+                        } else if (favorite.unit) {
+                            // 显示学习单元
+                            favoritesHTML += `
+                                <div style="border: 1px solid #ddd; border-radius: 8px; padding: 1.5rem;">
+                                    <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+                                        <span style="background-color: #e8f5e8; color: #2e7d32; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.8rem; margin-right: 1rem;">单元</span>
+                                        <h3>${favorite.unit.title || '无标题'}</h3>
+                                    </div>
+                                    <p style="color: #666; margin: 1rem 0;">${favorite.unit.description || '无描述'}</p>
+                                    <a href="/learning-unit?id=${favorite.unit.id}" class="continue-btn" style="display: inline-block;">查看详情</a>
+                                </div>
+                            `;
+                        } else {
+                            // 显示基本信息
+                            favoritesHTML += `
+                                <div style="border: 1px solid #ddd; border-radius: 8px; padding: 1.5rem;">
+                                    <h3>收藏 ${favorite.targetType === 'PATH' ? '路线' : '单元'}</h3>
+                                    <p style="color: #666; margin: 1rem 0;">ID: ${favorite.targetId}</p>
+                                    <p style="color: #999; font-size: 0.8rem;">收藏时间: ${favorite.createdAt ? new Date(favorite.createdAt).toLocaleString() : '未知'}</p>
+                                </div>
+                            `;
+                        }
+                    });
+                    favoritesHTML += `</div></section>`;
+                    mainContent.innerHTML = favoritesHTML;
+                } else {
+                    mainContent.innerHTML = `
+                        <section class="profile-header">
+                            <h2 style="margin-bottom: 2rem; color: #333;">我的收藏 (0)</h2>
+                            <div style="text-align: center; padding: 3rem; color: #666;">暂无收藏，去学习单元页面收藏你喜欢的资源吧！</div>
+                        </section>
+                    `;
+                }
+            })
+            .catch(err => {
+                console.error('加载收藏失败:', err);
+                mainContent.innerHTML = `
+                    <section class="profile-header">
+                        <h2 style="margin-bottom: 2rem; color: #333;">我的收藏</h2>
+                        <div style="text-align: center; padding: 3rem; color: #999;">加载失败，请稍后重试</div>
+                    </section>
+                `;
+            });
+        }
+
+        // 显示笔记
+        function showNotes() {
+            const mainContent = document.querySelector('.main-content');
+            
+            if (!isVipUser()) {
+                mainContent.innerHTML = `
+                    <section class="profile-header">
+                        <h2 style="margin-bottom: 2rem; color: #333;">我的笔记</h2>
+                        <div style="background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); border: 1px solid #4caf50; border-radius: 8px; padding: 2rem; text-align: center;">
+                            <div style="font-size: 3rem; margin-bottom: 1rem;">💎</div>
+                            <h3 style="color: #2e7d32; margin-bottom: 0.5rem;">VIP会员专属功能</h3>
+                            <p style="color: #2e7d32; margin-bottom: 1rem;">开通VIP会员即可解锁学习笔记功能，随时记录学习心得</p>
+                            <a href="/vip" class="btn btn-primary" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-color: #f59e0b;">开通VIP会员</a>
+                        </div>
+                    </section>
+                `;
+                return;
+            }
+
+            mainContent.innerHTML = `
+                <section class="profile-header">
+                    <h2 style="margin-bottom: 2rem; color: #333;">我的笔记</h2>
+                    <div style="text-align: center; padding: 3rem; color: #999;">加载中...</div>
+                </section>
+            `;
+            
+            // 调用API获取笔记列表
+            fetch('/api/notes', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.code === 200 && data.data && data.data.length > 0) {
+                    let notesHTML = `
+                        <section class="profile-header">
+                            <h2 style="margin-bottom: 2rem; color: #333;">我的笔记 (${data.data.length})</h2>
+                            <ul style="list-style: none;">
+                    `;
+                    data.data.forEach(note => {
+                        const date = note.createdAt ? new Date(note.createdAt).toLocaleDateString() : '';
+                        const contentPreview = note.content ? note.content.replace(/<[^>]+>/g, '').substring(0, 100) + '...' : '';
+                        notesHTML += `
+                            <li style="border-bottom: 1px solid #eee; padding: 1.5rem 0;">
+                                <h3>${note.title || '无标题'}</h3>
+                                <p style="color: #666; margin: 1rem 0;">${contentPreview}</p>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="font-size: 0.8rem; color: #666;">${date}</span>
+                                    <a href="/learning-unit?id=${note.unitId}" style="color: #007bff; text-decoration: none;">查看</a>
+                                </div>
+                            </li>
+                        `;
+                    });
+                    notesHTML += `</ul></section>`;
+                    mainContent.innerHTML = notesHTML;
+                } else {
+                    mainContent.innerHTML = `
+                        <section class="profile-header">
+                            <h2 style="margin-bottom: 2rem; color: #333;">我的笔记 (0)</h2>
+                            <div style="text-align: center; padding: 3rem; color: #666;">暂无笔记，去学习单元页面记录你的第一篇笔记吧！</div>
+                        </section>
+                    `;
+                }
+            })
+            .catch(err => {
+                console.error('加载笔记失败:', err);
+                mainContent.innerHTML = `
+                    <section class="profile-header">
+                        <h2 style="margin-bottom: 2rem; color: #333;">我的笔记</h2>
+                        <div style="text-align: center; padding: 3rem; color: #999;">加载失败，请稍后重试</div>
+                    </section>
+                `;
+            });
+        }
+
+        // 显示学习轨迹
+        function showLearningTrack() {
+            const mainContent = document.querySelector('.main-content');
+            
+            if (!isVipUser()) {
+                mainContent.innerHTML = `
+                    <section class="profile-header">
+                        <h2 style="margin-bottom: 2rem; color: #333;">学习轨迹</h2>
+                        <div style="background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); border: 1px solid #4caf50; border-radius: 8px; padding: 2rem; text-align: center;">
+                            <div style="font-size: 3rem; margin-bottom: 1rem;">💎</div>
+                            <h3 style="color: #2e7d32; margin-bottom: 0.5rem;">VIP会员专属功能</h3>
+                            <p style="color: #2e7d32; margin-bottom: 1rem;">开通VIP会员即可解锁学习轨迹功能，查看完整的学习记录</p>
+                            <a href="/vip" class="btn btn-primary" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-color: #f59e0b;">开通VIP会员</a>
+                        </div>
+                    </section>
+                `;
+                return;
+            }
+
+            mainContent.innerHTML = `
+                <section class="profile-header">
+                    <h2 style="margin-bottom: 2rem; color: #333;">学习轨迹</h2>
+                    <div style="text-align: center; padding: 3rem; color: #999;">加载中...</div>
+                </section>
+            `;
+            
+            // 调用API获取学习轨迹数据
+            fetch('/api/progress/overview', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.code === 200 && data.data) {
+                    // 加载学习统计数据
+                    fetch('/api/progress/stats', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    })
+                    .then(res => res.json())
+                    .then(statsData => {
+                        // 加载最近学习记录
+                        fetch('/api/progress/recent?limit=20', {
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        })
+                        .then(res => res.json())
+                        .then(recentData => {
+                            let trackHTML = `
+                                <section class="profile-header">
+                                    <h2 style="margin-bottom: 2rem; color: #333;">学习轨迹</h2>
+                                    <div class="trend-chart">
+                                        <h3 style="margin-bottom: 1rem;">📈 学习概览</h3>
+                                        <div class="stats-grid">
+                                            <div class="stat-card">
+                                                <div class="stat-number">${data.data.completed || 0}</div>
+                                                <div class="stat-label">已完成单元</div>
+                                            </div>
+                                            <div class="stat-card">
+                                                <div class="stat-number">${statsData.data?.completedUnits || 0}次</div>
+                                                <div class="stat-label">学习次数</div>
+                                            </div>
+                                            <div class="stat-card">
+                                                <div class="stat-number">${data.data.completionRate || '0%'}</div>
+                                                <div class="stat-label">完成率</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div style="margin-top: 2rem;">
+                                        <h3 style="margin-bottom: 1rem;">最近学习记录</h3>
+                            `;
+                            
+                            if (recentData.code === 200 && recentData.data && recentData.data.length > 0) {
+                                trackHTML += `
+                                    <ul style="list-style: none;">
+                                `;
+                                recentData.data.forEach(record => {
+                                    const date = record.startTime ? new Date(record.startTime).toLocaleString() : '';
+                                    const status = record.status === 'COMPLETED' ? '✅ 已完成' : record.status === 'IN_PROGRESS' ? '🔄 进行中' : '📋 未开始';
+                                    trackHTML += `
+                                        <li style="border-bottom: 1px solid #eee; padding: 1.5rem 0;">
+                                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                <div>
+                                                    <h4 style="margin-bottom: 0.5rem;">${record.unitTitle || '未知单元'}</h4>
+                                                    <p style="color: #666; font-size: 0.9rem; margin-bottom: 0.5rem;">${record.pathTitle || '未知路线'}</p>
+                                                    <div style="display: flex; align-items: center; gap: 1rem;">
+                                                        <span style="color: #666; font-size: 0.8rem;">${date}</span>
+                                                        <span style="background-color: ${record.status === 'COMPLETED' ? '#e8f5e8' : record.status === 'IN_PROGRESS' ? '#e3f2fd' : '#f5f5f5'}; color: ${record.status === 'COMPLETED' ? '#2e7d32' : record.status === 'IN_PROGRESS' ? '#1976d2' : '#666'}; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.8rem;">${status}</span>
+                                                    </div>
+                                                </div>
+                                                <a href="/learning-unit?id=${record.unitId}" class="continue-btn" style="display: inline-block; padding: 0.5rem 1rem; font-size: 0.8rem;">查看详情</a>
+                                            </div>
+                                        </li>
+                                    `;
+                                });
+                                trackHTML += `
+                                    </ul>
+                                `;
+                            } else {
+                                trackHTML += `
+                                    <div style="text-align: center; padding: 3rem; color: #666;">暂无学习记录，开始你的学习之旅吧！</div>
+                                `;
+                            }
+                            
+                            trackHTML += `
+                                    </div>
+                                </section>
+                            `;
+                            mainContent.innerHTML = trackHTML;
+                        })
+                        .catch(err => {
+                            console.error('加载最近学习记录失败:', err);
+                            mainContent.innerHTML = `
+                                <section class="profile-header">
+                                    <h2 style="margin-bottom: 2rem; color: #333;">学习轨迹</h2>
+                                    <div style="text-align: center; padding: 3rem; color: #999;">加载失败，请稍后重试</div>
+                                </section>
+                            `;
+                        });
+                    })
+                    .catch(err => {
+                        console.error('加载学习统计失败:', err);
+                        mainContent.innerHTML = `
+                            <section class="profile-header">
+                                <h2 style="margin-bottom: 2rem; color: #333;">学习轨迹</h2>
+                                <div style="text-align: center; padding: 3rem; color: #999;">加载失败，请稍后重试</div>
+                            </section>
+                        `;
+                    });
+                } else {
+                    mainContent.innerHTML = `
+                        <section class="profile-header">
+                            <h2 style="margin-bottom: 2rem; color: #333;">学习轨迹</h2>
+                            <div style="text-align: center; padding: 3rem; color: #666;">暂无学习记录，开始你的学习之旅吧！</div>
+                        </section>
+                    `;
+                }
+            })
+            .catch(err => {
+                console.error('加载学习轨迹失败:', err);
+                mainContent.innerHTML = `
+                    <section class="profile-header">
+                        <h2 style="margin-bottom: 2rem; color: #333;">学习轨迹</h2>
+                        <div style="text-align: center; padding: 3rem; color: #999;">加载失败，请稍后重试</div>
+                    </section>
+                `;
+            });
+        }
+
+        // 显示消息通知
+        function showNotifications() {
+            const mainContent = document.querySelector('.main-content');
+            mainContent.innerHTML = `
+                <section class="profile-header">
+                    <h2 style="margin-bottom: 2rem; color: #333;">消息通知</h2>
+                    <div style="text-align: center; padding: 3rem; color: #999;">加载中...</div>
+                </section>
+            `;
+
+            fetch('/api/notifications', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.code === 200 && data.data && data.data.length > 0) {
+                    let notifHTML = `
+                        <section class="profile-header">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                                <h2>消息通知 (${data.data.length})</h2>
+                                <button id="markAllReadBtn" style="padding: 0.5rem 1rem; border: 1px solid #007bff; border-radius: 4px; background-color: white; color: #007bff; cursor: pointer; font-weight: 500;">全部标为已读</button>
+                            </div>
+                            <ul style="list-style: none;" id="notificationList">
+                    `;
+                    data.data.forEach(notif => {
+                        const date = formatDate(notif.createdAt);
+                        const isRead = notif.isRead === 1;
+                        let typeLabel = '📋 系统通知';
+                        let typeColor = '#6c757d';
+
+                        // 根据通知类型设置图标和颜色（像抖音一样醒目）
+                        switch (notif.type) {
+                            case 'PROGRESS_MILESTONE':
+                                typeLabel = '📢 进度提醒';
+                                typeColor = '#17a2b8';  // 青色
+                                break;
+                            case 'COMMENT_REPLY':
+                                typeLabel = '💬 评论回复';
+                                typeColor = '#007bff';  // 蓝色
+                                break;
+                            case 'NEW_COMMENT':
+                                typeLabel = '📝 新评论';
+                                typeColor = '#28a745';  // 绿色
+                                break;
+                            case 'COMMENT_LIKE':
+                                typeLabel = '❤️ 收到点赞';
+                                typeColor = '#dc3545';  // 红色
+                                break;
+                            case 'NEW_ANNOUNCEMENT':
+                                typeLabel = '📢 新公告';
+                                typeColor = '#fd7e14';  // 橙色
+                                break;
+                        }
+                        notifHTML += `
+                            <li style="border-bottom: 1px solid #eee; padding: 1.5rem 0; background-color: ${isRead ? 'transparent' : '#f8f9fa'}; border-radius: 6px; margin-bottom: 0.5rem; border-left: 4px solid ${typeColor};">
+                                <div style="display: flex; justify-content: space-between;">
+                                    <div>
+                                        <span style="background-color: ${isRead ? '#e9ecef' : typeColor + '20'}; color: ${isRead ? '#666' : typeColor}; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; margin-right: 0.5rem; font-weight: 500;">${typeLabel}</span>
+                                        <strong>${notif.title}</strong>
+                                        ${!isRead ? '<span style="color: #28a745; font-size: 0.75rem; margin-left: 0.5rem;">● 新</span>' : ''}
+                                    </div>
+                                    <span style="color: #666; font-size: 0.8rem;">${date}</span>
+                                </div>
+                                <p style="color: #666; margin: 1rem 0;">${notif.content || ''}</p>
+                                <div style="display: flex; gap: 1rem;">
+                                    ${!isRead ? `<button onclick="markNotificationRead(${notif.id})" style="padding: 0.25rem 0.75rem; border: 1px solid #28a745; border-radius: 4px; background-color: white; color: #28a745; cursor: pointer; font-size: 0.8rem;">标为已读</button>` : ''}
+                                    <button onclick="deleteNotification(${notif.id})" style="padding: 0.25rem 0.75rem; border: 1px solid #dc3545; border-radius: 4px; background-color: white; color: #dc3545; cursor: pointer; font-size: 0.8rem;">删除</button>
+                                </div>
+                            </li>
+                        `;
+                    });
+                    notifHTML += `</ul></section>`;
+                    mainContent.innerHTML = notifHTML;
+
+                    document.getElementById('markAllReadBtn').addEventListener('click', function() {
+                        fetch('/api/notifications/read-all', {
+                            method: 'POST',
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        })
+                        .then(res => res.json())
+                        .then(result => {
+                            if (result.code === 200) {
+                                showNotifications();
+                            }
+                        });
+                    });
+                } else {
+                    mainContent.innerHTML = `
+                        <section class="profile-header">
+                            <h2 style="margin-bottom: 2rem; color: #333;">消息通知 (0)</h2>
+                            <div style="text-align: center; padding: 3rem; color: #666;">暂无通知，继续学习来获取进度提醒吧！</div>
+                        </section>
+                    `;
+                }
+            })
+            .catch(err => {
+                console.error('加载通知失败:', err);
+                mainContent.innerHTML = `
+                    <section class="profile-header">
+                        <h2 style="margin-bottom: 2rem; color: #333;">消息通知</h2>
+                        <div style="text-align: center; padding: 3rem; color: #999;">加载失败，请稍后重试</div>
+                    </section>
+                `;
+            });
+        }
+
+        function markNotificationRead(id) {
+            fetch(`/api/notifications/${id}/read`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            .then(res => res.json())
+            .then(result => {
+                if (result.code === 200) {
+                    showNotifications();
+                }
+            });
+        }
+
+        function deleteNotification(id) {
+            if (confirm('确定要删除这条通知吗？')) {
+                fetch(`/api/notifications/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                })
+                .then(res => res.json())
+                .then(result => {
+                    if (result.code === 200) {
+                        showNotifications();
+                    }
+                });
+            }
+        }
+
+        // 显示设置
+        function showSettings() {
+            const mainContent = document.querySelector('.main-content');
+            mainContent.innerHTML = `
+                <section class="profile-header">
+                    <h2 style="margin-bottom: 2rem; color: #333;">设置</h2>
+                    <div style="max-width: 600px;">
+                        <div style="margin-bottom: 2rem;">
+                            <h3 style="margin-bottom: 1rem;">通知设置</h3>
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background-color: #f8f9fa; border-radius: 6px; margin-bottom: 0.5rem;">
+                                <span>学习提醒</span>
+                                <input type="checkbox" checked>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background-color: #f8f9fa; border-radius: 6px;">
+                                <span>系统通知</span>
+                                <input type="checkbox" checked>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 style="margin-bottom: 1rem;">账号安全</h3>
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background-color: #f8f9fa; border-radius: 6px; margin-bottom: 0.5rem;">
+                                <span>绑定邮箱</span>
+                                <span style="color: #28a745;">已绑定</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background-color: #f8f9fa; border-radius: 6px;">
+                                <span>绑定手机号</span>
+                                <span style="color: #28a745;">已绑定</span>
+                            </div>
+                        </div>
+                        <div style="margin-top: 3rem;">
+                            <button id="logoutBtn" style="padding: 0.75rem 1.5rem; border: none; border-radius: 4px; background-color: #dc3545; color: white; cursor: pointer; font-weight: 500; width: 100%;">退出登录</button>
+                        </div>
+                    </div>
+                </section>
+            `;
+            
+            // 退出登录按钮
+            document.getElementById('logoutBtn').addEventListener('click', function() {
+                if (confirm('确定要退出登录吗？')) {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+                    window.location.href = '/login';
+                }
+            });
+        }
+
+        function handleAvatarUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (!file.type.startsWith('image/')) {
+                alert('请选择图片文件');
+                return;
+            }
+
+            if (file.size > 10 * 1024 * 1024) {
+                alert('图片大小不能超过10MB');
+                return;
+            }
+
+            selectedFile = file;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const cropImage = document.getElementById('cropImage');
+                cropImage.src = e.target.result;
+                
+                if (cropper) {
+                    cropper.destroy();
+                }
+                
+                cropper = new Cropper(cropImage, {
+                    aspectRatio: 1,
+                    viewMode: 1,
+                    autoCropArea: 0.8,
+                    responsive: true,
+                    checkCrossOrigin: false
+                });
+                
+                document.getElementById('avatarCropModal').classList.add('show');
+            };
+            reader.readAsDataURL(file);
+            event.target.value = '';
+        }
+
+        function closeCropModal() {
+            document.getElementById('avatarCropModal').classList.remove('show');
+            if (cropper) {
+                cropper.destroy();
+                cropper = null;
+            }
+            selectedFile = null;
+        }
+
+        function cropAndUpload() {
+            if (!cropper || !selectedFile) {
+                alert('请先选择图片');
+                return;
+            }
+
+            const canvas = cropper.getCroppedCanvas({
+                width: 400,
+                height: 400,
+                imageSmoothingEnabled: true,
+                imageSmoothingQuality: 'high'
+            });
+
+            canvas.toBlob(function(blob) {
+                const formData = new FormData();
+                // 使用原始文件的扩展名
+                const fileName = 'avatar' + (selectedFile.name.lastIndexOf('.') > 0 ? selectedFile.name.substring(selectedFile.name.lastIndexOf('.')) : '.jpg');
+                formData.append('file', blob, fileName);
+
+                const sidebarAvatar = document.getElementById('sidebarAvatar');
+                const profileAvatar = document.getElementById('profileAvatar');
+                
+                const originalSidebarContent = sidebarAvatar.innerHTML;
+                const originalProfileContent = profileAvatar.innerHTML;
+                
+                sidebarAvatar.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 100%;"><div style="width: 40px; height: 40px; border: 3px solid #f3f3f3; border-top: 3px solid #007bff; border-radius: 50%; animation: spin 1s linear infinite;"></div></div><style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>';
+                profileAvatar.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 100%;"><div style="width: 30px; height: 30px; border: 3px solid #f3f3f3; border-top: 3px solid #007bff; border-radius: 50%; animation: spin 1s linear infinite;"></div></div>';
+
+                closeCropModal();
+
+                fetch('/api/user/avatar', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.code === 200) {
+                        // 上传成功后，重新从后端获取最新的用户信息
+                        fetch('/api/user/profile', {
+                            headers: {
+                                'Authorization': `Bearer ${token}`
+                            }
+                        })
+                        .then(response => response.json())
+                        .then(profileData => {
+                            if (profileData.code === 200) {
+                                user = profileData.data;
+                                localStorage.setItem('user', JSON.stringify(user));
+                                updateUserInfo();
+                                alert('头像上传成功！');
+                            }
+                        });
+                    } else {
+                        alert('头像上传失败：' + (data.message || '未知错误'));
+                        sidebarAvatar.innerHTML = originalSidebarContent;
+                        profileAvatar.innerHTML = originalProfileContent;
+                    }
+                })
+                .catch(error => {
+                    console.error('头像上传失败:', error);
+                    alert('头像上传失败，请稍后重试');
+                    sidebarAvatar.innerHTML = originalSidebarContent;
+                    profileAvatar.innerHTML = originalProfileContent;
+                });
+            }, 'image/jpeg', 0.9);
+        }
+
+        async function loadDomainDropdown() {
+            try {
+                const [catRes, subRes] = await Promise.all([
+                    fetch('/api/categories/active'),
+                    fetch('/api/subcategories/all')
+                ]);
+                const catData = await catRes.json();
+                const subData = await subRes.json();
+                if (catData.code !== 200 || subData.code !== 200) return;
+                const categories = catData.data || [];
+                const subcategories = subData.data || [];
+                const dropdown = document.getElementById('domainDropdown');
+                if (!dropdown) return;
+                categories.forEach(cat => {
+                    const catSubs = subcategories.filter(s => s.categoryId === cat.id);
+                    if (catSubs.length > 0) {
+                        const group = document.createElement('div');
+                        group.className = 'menu-group';
+                        group.textContent = cat.name;
+                        dropdown.appendChild(group);
+                    }
+                    catSubs.forEach(sub => {
+                        const a = document.createElement('a');
+                        a.href = '/learning-subdomain?id=' + sub.id;
+                        a.textContent = sub.name;
+                        dropdown.appendChild(a);
+                    });
+                });
+            } catch(e) { /* silently fail */ }
+        }
+
+        function showChangePasswordModal() {
+            const modal = document.createElement('div');
+            modal.id = 'changePasswordModal';
+            modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 2000; display: flex; align-items: center; justify-content: center;';
+            modal.innerHTML = `
+                <div style="background: white; padding: 2rem; border-radius: 8px; max-width: 400px; width: 90%;">
+                    <h3 style="margin-bottom: 1rem;">修改密码</h3>
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">手机号</label>
+                        <input type="tel" id="changePhone" placeholder="请输入手机号" style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">验证码</label>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <input type="text" id="changeCode" placeholder="请输入验证码" maxlength="6" style="flex: 1; padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px;">
+                            <button type="button" id="sendCodeBtn" style="padding: 0.5rem 1rem; border: 1px solid #007bff; border-radius: 4px; background-color: white; color: #007bff; cursor: pointer; font-weight: 500; white-space: nowrap;">发送验证码</button>
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">新密码</label>
+                        <input type="password" id="changeNewPassword" placeholder="请输入新密码（至少6位）" style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                    <div id="changeError" style="color: #ff4444; font-size: 0.85rem; margin-bottom: 1rem; display: none;"></div>
+                    <div style="display: flex; gap: 1rem;">
+                        <button type="button" id="confirmChangeBtn" class="continue-btn" style="flex: 1;">确认修改</button>
+                        <button type="button" id="cancelChangeBtn" style="flex: 1; padding: 0.5rem 1rem; border: 1px solid #ddd; border-radius: 4px; background-color: white; cursor: pointer; font-weight: 500;">取消</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+
+            // 发送验证码
+            let countdown = 0;
+            document.getElementById('sendCodeBtn').addEventListener('click', function() {
+                if (countdown > 0) return;
+                const phone = document.getElementById('changePhone').value;
+                if (!phone || !/^1[3-9]\d{9}$/.test(phone)) {
+                    document.getElementById('changeError').textContent = '请输入正确的手机号';
+                    document.getElementById('changeError').style.display = 'block';
+                    return;
+                }
+                fetch('/api/user/send-verification-code', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ phone: phone })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.code === 200) {
+                        alert('验证码已发送');
+                        countdown = 60;
+                        const btn = document.getElementById('sendCodeBtn');
+                        btn.textContent = countdown + '秒后重试';
+                        const timer = setInterval(() => {
+                            countdown--;
+                            btn.textContent = countdown > 0 ? countdown + '秒后重试' : '发送验证码';
+                            if (countdown <= 0) clearInterval(timer);
+                        }, 1000);
+                    } else {
+                        document.getElementById('changeError').textContent = data.message || '发送失败';
+                        document.getElementById('changeError').style.display = 'block';
+                    }
+                });
+            });
+
+            // 确认修改
+            document.getElementById('confirmChangeBtn').addEventListener('click', function() {
+                const phone = document.getElementById('changePhone').value;
+                const code = document.getElementById('changeCode').value;
+                const newPassword = document.getElementById('changeNewPassword').value;
+                const errorDiv = document.getElementById('changeError');
+
+                if (!phone || !/^1[3-9]\d{9}$/.test(phone)) {
+                    errorDiv.textContent = '请输入正确的手机号';
+                    errorDiv.style.display = 'block';
+                    return;
+                }
+                if (!code || code.length !== 6) {
+                    errorDiv.textContent = '请输入6位验证码';
+                    errorDiv.style.display = 'block';
+                    return;
+                }
+                if (!newPassword || newPassword.length < 6) {
+                    errorDiv.textContent = '新密码至少6位';
+                    errorDiv.style.display = 'block';
+                    return;
+                }
+
+                fetch('/api/user/change-password', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        phone: phone,
+                        verificationCode: code,
+                        newPassword: newPassword
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.code === 200) {
+                        alert('密码修改成功');
+                        document.body.removeChild(modal);
+                    } else {
+                        errorDiv.textContent = data.message || '修改失败';
+                        errorDiv.style.display = 'block';
+                    }
+                });
+            });
+
+            // 取消
+            document.getElementById('cancelChangeBtn').addEventListener('click', function() {
+                document.body.removeChild(modal);
+            });
+
+            // 点击背景关闭
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    document.body.removeChild(modal);
+                }
+            });
+        }
+
+        function isVipUser() {
+            if (!user) return false;
+            if (user.role === 'VIP' || user.role === 'ADMIN') return true;
+            if (user.vipExpireDate) {
+                const expireDate = new Date(user.vipExpireDate);
+                return expireDate > new Date();
+            }
+            return false;
+        }
+
+        function updateVipButtons() {
+            const vipDataBtn = document.getElementById('vipDataBtn');
+            const vipAchieveBtn = document.getElementById('vipAchieveBtn');
+            const favoritesBtn = document.getElementById('favoritesBtn');
+            if (vipDataBtn) vipDataBtn.style.display = 'block';
+            if (vipAchieveBtn) vipAchieveBtn.style.display = 'block';
+            if (favoritesBtn) favoritesBtn.style.display = 'block';
+        }
+
+        function showVipDataAnalysis() {
+            if (!isVipUser()) {
+                const mainContent = document.querySelector('.main-content');
+                mainContent.innerHTML = `
+                    <section class="profile-header">
+                        <h2 style="margin-bottom: 2rem; color: #333;">学习数据分析</h2>
+                        <div style="background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); border: 1px solid #4caf50; border-radius: 8px; padding: 2rem; text-align: center;">
+                            <div style="font-size: 3rem; margin-bottom: 1rem;">💎</div>
+                            <h3 style="color: #2e7d32; margin-bottom: 0.5rem;">VIP会员专属功能</h3>
+                            <p style="color: #2e7d32; margin-bottom: 1rem;">开通VIP会员即可解锁学习数据分析功能，查看详细的学习统计</p>
+                            <a href="/vip" class="btn btn-primary" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-color: #f59e0b;">开通VIP会员</a>
+                        </div>
+                    </section>
+                `;
+                return;
+            }
+            const modal = document.getElementById('vipDataModal');
+            modal.style.display = 'flex';
+            loadVipDataAnalysis();
+        }
+
+        function closeVipDataAnalysis() {
+            document.getElementById('vipDataModal').style.display = 'none';
+        }
+
+        function loadVipDataAnalysis() {
+            fetch('/api/progress/profile-stats', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.code === 200 && data.data) {
+                    const stats = data.data;
+                    document.getElementById('vipTotalHours').textContent = Math.floor((stats.totalStudyDuration || 0) / 3600);
+                    document.getElementById('vipStreakDays').textContent = stats.streakDays || 0;
+                    document.getElementById('vipPathsCount').textContent = stats.completedPaths || 0;
+                    document.getElementById('vipNotesCount').textContent = stats.totalNotes || 0;
+                }
+            })
+            .catch(err => console.error('加载VIP数据失败:', err));
+
+            loadVipTrendChart();
+            loadVipLearningTrack();
+            loadVipNotesList();
+        }
+
+        function loadVipTrendChart() {
+            fetch('/api/progress/weekly-trend', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.code === 200 && data.data) {
+                    renderVipTrendChart(data.data);
+                }
+            })
+            .catch(err => console.error('加载VIP趋势图失败:', err));
+        }
+
+        function renderVipTrendChart(trendData) {
+            const canvas = document.getElementById('vipTrendChart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            if (window.vipTrendChartInstance) {
+                window.vipTrendChartInstance.destroy();
+            }
+            const labels = trendData.dates.map(date => {
+                const d = new Date(date);
+                return `${d.getMonth() + 1}/${d.getDate()}`;
+            });
+            window.vipTrendChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '学习时长(分钟)',
+                        data: trendData.durations,
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#667eea',
+                        pointBorderColor: '#fff',
+                        pointRadius: 5,
+                        pointHoverRadius: 7
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    aspectRatio: 2.5,
+                    plugins: {
+                        legend: { display: true, position: 'top' },
+                        tooltip: { mode: 'index', intersect: false }
+                    },
+                    scales: {
+                        x: { grid: { display: false } },
+                        y: { beginAtZero: true, grid: { color: '#eee' } }
+                    }
+                }
+            });
+        }
+
+        function loadVipLearningTrack() {
+            const container = document.getElementById('vipLearningTrack');
+            fetch('/api/progress/recent?limit=10', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.code === 200 && data.data && data.data.length > 0) {
+                    let html = '';
+                    data.data.forEach((record, index) => {
+                        const lastStudyTime = formatDateTimeLocale(parseBackendDate(record.lastStudyTime));
+                        const status = record.status === 'COMPLETED' ? '✅ 已完成' : record.status === 'IN_PROGRESS' ? '🔄 进行中' : '📋 未开始';
+                        html += `
+                            <div style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem; border-bottom: 1px solid #eee;">
+                                <div style="width: 30px; height: 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: bold;">${index + 1}</div>
+                                <div style="flex: 1;">
+                                    <div style="font-weight: 500; color: #333;">${record.unitTitle || '未知单元'}</div>
+                                    <div style="font-size: 0.8rem; color: #666;">${lastStudyTime}</div>
+                                </div>
+                                <div style="font-size: 0.8rem; padding: 0.25rem 0.5rem; border-radius: 20px; background: ${record.status === 'COMPLETED' ? '#e8f5e8' : '#e3f2fd'}; color: ${record.status === 'COMPLETED' ? '#2e7d32' : '#1976d2'};">${status}</div>
+                            </div>
+                        `;
+                    });
+                    container.innerHTML = html;
+                } else {
+                    container.innerHTML = '<div style="text-align: center; padding: 2rem; color: #666;">暂无学习轨迹记录</div>';
+                }
+            })
+            .catch(err => {
+                container.innerHTML = '<div style="text-align: center; padding: 2rem; color: #999;">加载失败</div>';
+            });
+        }
+
+        function loadVipNotesList() {
+            const container = document.getElementById('vipNotesList');
+            fetch('/api/notes', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.code === 200 && data.data && data.data.length > 0) {
+                    let html = '';
+                    data.data.slice(0, 10).forEach(note => {
+                        const date = note.createdAt ? new Date(note.createdAt).toLocaleDateString() : '';
+                        html += `
+                            <div style="padding: 0.75rem; border-bottom: 1px solid #eee;">
+                                <div style="font-weight: 500; color: #333; margin-bottom: 0.25rem;">${note.title || '无标题'}</div>
+                                <div style="font-size: 0.8rem; color: #666;">${date}</div>
+                            </div>
+                        `;
+                    });
+                    container.innerHTML = html;
+                } else {
+                    container.innerHTML = '<div style="text-align: center; padding: 2rem; color: #666;">暂无笔记</div>';
+                }
+            })
+            .catch(err => {
+                container.innerHTML = '<div style="text-align: center; padding: 2rem; color: #999;">加载失败</div>';
+            });
+        }
+
+        function showVipAchievements() {
+            if (!isVipUser()) {
+                const mainContent = document.querySelector('.main-content');
+                mainContent.innerHTML = `
+                    <section class="profile-header">
+                        <h2 style="margin-bottom: 2rem; color: #333;">学习成就</h2>
+                        <div style="background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); border: 1px solid #4caf50; border-radius: 8px; padding: 2rem; text-align: center;">
+                            <div style="font-size: 3rem; margin-bottom: 1rem;">💎</div>
+                            <h3 style="color: #2e7d32; margin-bottom: 0.5rem;">VIP会员专属功能</h3>
+                            <p style="color: #2e7d32; margin-bottom: 1rem;">开通VIP会员即可解锁学习成就功能，解锁专属成就徽章</p>
+                            <a href="/vip" class="btn btn-primary" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-color: #f59e0b;">开通VIP会员</a>
+                        </div>
+                    </section>
+                `;
+                return;
+            }
+            const modal = document.getElementById('vipAchieveModal');
+            modal.style.display = 'flex';
+            loadVipAchievements();
+        }
+
+        function closeVipAchievements() {
+            document.getElementById('vipAchieveModal').style.display = 'none';
+        }
+
+        async function loadVipAchievements() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                document.getElementById('achieveList').innerHTML = '<div style="text-align: center; padding: 2rem; color: #666;">请先登录</div>';
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/achievement/list', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+
+                if (result.code === 200 && result.data) {
+                    const data = result.data;
+                    document.getElementById('achievePoints').textContent = data.totalPoints || 0;
+
+                    const container = document.getElementById('achieveList');
+                    let html = '';
+
+                    const achievements = data.achievements || [];
+                    if (achievements.length === 0) {
+                        container.innerHTML = '<div style="text-align: center; padding: 2rem; color: #666;">🎯 暂无成就数据，开始学习解锁成就吧！</div>';
+                        return;
+                    }
+
+                    achievements.forEach(achieve => {
+                        html += `
+                            <div style="background: ${achieve.unlocked ? 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' : '#f5f5f5'}; color: ${achieve.unlocked ? 'white' : '#999'}; padding: 1.5rem; border-radius: 8px; text-align: center; transition: all 0.3s; ${achieve.unlocked ? '' : 'opacity: 0.6;'}">
+                                <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">${achieve.icon}</div>
+                                <div style="font-weight: bold; margin-bottom: 0.25rem;">${achieve.name}</div>
+                                <div style="font-size: 0.8rem; margin-bottom: 0.5rem;">${achieve.description}</div>
+                                <div style="font-size: 0.8rem; background: ${achieve.unlocked ? 'rgba(255,255,255,0.3)' : '#e0e0e0'}; padding: 0.25rem 0.5rem; border-radius: 20px; display: inline-block;">${achieve.points} 成就点</div>
+                                ${achieve.unlocked ? '<div style="margin-top: 0.5rem; font-size: 0.8rem;">✅ 已解锁</div>' : '<div style="margin-top: 0.5rem; font-size: 0.8rem;">🔒 未解锁</div>'}
+                            </div>
+                        `;
+                    });
+                    container.innerHTML = html;
+                } else {
+                    const errorMsg = result.message || '服务器返回异常';
+                    document.getElementById('achieveList').innerHTML = `
+                        <div style="text-align: center; padding: 2rem; color: #dc3545;">
+                            <div style="font-size: 2rem; margin-bottom: 1rem;">⚠️</div>
+                            <div style="margin-bottom: 1rem;">加载失败：${errorMsg}</div>
+                            <button onclick="loadVipAchievements()" style="padding: 0.5rem 1.5rem; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">重新加载</button>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('加载成就数据失败:', error);
+                document.getElementById('achieveList').innerHTML = `
+                    <div style="text-align: center; padding: 2rem; color: #dc3545;">
+                        <div style="font-size: 2rem; margin-bottom: 1rem;">❌</div>
+                        <div style="margin-bottom: 0.5rem;">加载失败</div>
+                        <div style="font-size: 0.85rem; color: #999; margin-bottom: 1rem;">${error.message || '网络连接异常'}</div>
+                        <button onclick="loadVipAchievements()" style="padding: 0.5rem 1.5rem; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">重新加载</button>
+                    </div>
+                `;
+            }
+        }
+
+        const origUpdateUserInfo = updateUserInfo;
+        updateUserInfo = function() {
+            origUpdateUserInfo();
+            updateVipButtons();
+        };
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
+    <div class="avatar-crop-modal" id="avatarCropModal">
+        <div class="avatar-crop-content">
+            <div class="avatar-crop-header">
+                <h3 class="avatar-crop-title">裁剪头像</h3>
+                <button class="avatar-crop-close" onclick="closeCropModal()">&times;</button>
+            </div>
+            <div class="avatar-crop-body">
+                <div class="avatar-crop-container">
+                    <img id="cropImage" style="max-width: 100%;">
+                </div>
+                <p style="color: #666; font-size: 0.9rem; text-align: center;">请调整裁剪框以选择头像区域（建议正方形）</p>
+            </div>
+            <div class="avatar-crop-footer">
+                <button class="avatar-crop-btn avatar-crop-btn-secondary" onclick="closeCropModal()">取消</button>
+                <button class="avatar-crop-btn avatar-crop-btn-primary" onclick="cropAndUpload()">确认上传</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
